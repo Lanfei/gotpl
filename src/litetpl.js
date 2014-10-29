@@ -36,7 +36,7 @@ var LiteTpl = (function() {
 		}
 		code = code + '__ret__=\'';
 		template = template.replace(/\s+/g, ' ').replace(/'/g, '"');
-		template = template.replace(new RegExp(openTag + '= *(.+?) *' + closeTag, 'g'), '\'+$1+\'');
+		template = template.replace(new RegExp(openTag + '= *(.+?) *' + closeTag, 'g'), '\'+($1)+\'');
 		template = template.replace(new RegExp(openTag + ' *(.+?) *' + closeTag, 'g'), '\';$1\n__ret__+=\'');
 		code += template + '\';return __ret__;';
 		return new Function('data', code);
