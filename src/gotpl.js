@@ -1,4 +1,17 @@
-var LiteTpl = (function() {
+/**
+ * GoTpl 1.1.0
+ * https://github.com/Lanfei/GoTpl
+ * (c) 2014 [Lanfei](http://www.clanfei.com/)
+ * A single template engine with cache mechanism
+ */
+
+(function(global) {
+
+	var gotpl = {
+		render: render,
+		compile: compile,
+		version: '1.1.0'
+	};
 
 	var defaults = {
 		cache: true,
@@ -32,18 +45,27 @@ var LiteTpl = (function() {
 		openTag = options.openTag || defaults.openTag;
 		closeTag = options.closeTag || defaults.closeTag;
 		for (var key in data) {
-			code += key + '=data[\'' + key + '\'],';
+			code += key + '=__data__[\'' + key + '\'],';
 		}
 		code = code + '__ret__=\'';
 		template = template.replace(/\s+/g, ' ').replace(/'/g, '"');
 		template = template.replace(new RegExp(openTag + '= *(.+?) *' + closeTag, 'g'), '\'+($1)+\'');
 		template = template.replace(new RegExp(openTag + ' *(.+?) *' + closeTag, 'g'), '\';$1\n__ret__+=\'');
 		code += template + '\';return __ret__;';
-		return new Function('data', code);
+		return new Function('__data__', code);
 	};
 
-	return {
-		render: render,
-		compile: compile
-	};
-})();
+	// Expose
+	if (typeof module === 'object' && typeof module.exports === 'object') {
+		module.exports = gotpl;
+	} else if (typeof define === "function") {
+		if (define.cmd) {
+			define(gotpl);
+		} else if (define.amd) {
+			define("gotpl", [], gotpl);
+		}
+	} else {
+		global.gotpl = gotpl;
+	}
+
+})(this);
