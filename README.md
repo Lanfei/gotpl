@@ -1,4 +1,4 @@
-LiteTpl
+GoTpl
 =======
 
 A lightweight template engine for JavaScript
