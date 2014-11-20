@@ -7,12 +7,6 @@
 
 (function(global) {
 
-	var gotpl = {
-		render: render,
-		compile: compile,
-		version: '1.1.0'
-	};
-
 	var defaults = {
 		cache: true,
 		openTag: '<%',
@@ -53,6 +47,12 @@
 		template = template.replace(new RegExp(openTag + ' *(.+?) *' + closeTag, 'g'), '\';$1\n__ret__+=\'');
 		code += template + '\';return __ret__;';
 		return new Function('__data__', code);
+	};
+
+	var gotpl = {
+		render: render,
+		compile: compile,
+		version: '1.1.0'
 	};
 
 	// Expose
