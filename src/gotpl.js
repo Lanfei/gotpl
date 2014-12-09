@@ -1,5 +1,5 @@
 /**
- * GoTpl 1.1.0
+ * GoTpl 1.2.0
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
  * A single template engine with cache mechanism
@@ -42,7 +42,7 @@
 			code += key + '=__data__[\'' + key + '\'],';
 		}
 		code = code + '__ret__=\'';
-		template = template.replace(/\s+/g, ' ').replace(/'/g, '"');
+		template = template.replace(/\s+/g, ' ').replace(/'/g, '\\\'');
 		template = template.replace(new RegExp(openTag + '= *(.+?) *' + closeTag, 'g'), '\'+($1)+\'');
 		template = template.replace(new RegExp(openTag + ' *(.+?) *' + closeTag, 'g'), '\';$1\n__ret__+=\'');
 		code += template + '\';return __ret__;';
@@ -52,7 +52,7 @@
 	var gotpl = {
 		render: render,
 		compile: compile,
-		version: '1.1.0'
+		version: '1.2.0'
 	};
 
 	// Expose
