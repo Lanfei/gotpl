@@ -10,12 +10,6 @@ module.exports = function(grunt) {
 
 		grunt.initConfig({
 			uglify: {
-				options: {
-					mangle: {
-						// Important!
-						except: ['require']
-					}
-				},
 				default: {
 					files: {
 						'./src/gotpl.min.js': './src/gotpl.js'
