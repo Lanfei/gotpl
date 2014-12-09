@@ -2,7 +2,7 @@
  * GoTpl 1.2.0
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
- * A single template engine with cache mechanism
+ * A simple template engine with cache mechanism
  */
 
 (function(global) {
