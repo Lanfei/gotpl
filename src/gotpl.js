@@ -42,7 +42,7 @@
 			code += key + '=__data__[\'' + key + '\'],';
 		}
 		code = code + '__ret__=\'';
-		template = template.replace(/\s+/g, ' ').replace(/'/g, '\\\'');
+		template = template.replace(/\s+/g, ' ').replace(/'/g, '"');
 		template = template.replace(new RegExp(openTag + '= *(.+?) *' + closeTag, 'g'), '\'+($1)+\'');
 		template = template.replace(new RegExp(openTag + ' *(.+?) *' + closeTag, 'g'), '\';$1\n__ret__+=\'');
 		code += template + '\';return __ret__;';
