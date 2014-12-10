@@ -28,17 +28,6 @@
 		return Object.toString.call(obj) === '[object Array]';
 	};
 
-	// Configure function
-	function config(key, value) {
-		if (typeof arguments.length === 1) {
-			for (var i in defaults) {
-				defaults[i] = key[i];
-			}
-		} else {
-			defaults[key] = value;
-		}
-	}
-
 	function each(obj, iterator) {
 		if (isArray(obj)) {
 			for (var i = 0, l = obj.length; i < l; ++i) {
@@ -48,6 +37,17 @@
 			for (var key in obj) {
 				iterator(obj[key], key);
 			}
+		}
+	}
+
+	// Configure function
+	function config(key, value) {
+		if (typeof arguments.length === 1) {
+			for (var i in defaults) {
+				defaults[i] = key[i];
+			}
+		} else {
+			defaults[key] = value;
 		}
 	}
 
