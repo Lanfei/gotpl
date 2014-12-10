@@ -1,5 +1,5 @@
 /**
- * GoTpl 1.2.0
+ * GoTpl 2.0.0
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
  * A lightweight template engine with cache mechanism
@@ -7,15 +7,29 @@
 
 (function(global) {
 
+	// GoTpl
+	var gotpl = {
+		render: render,
+		compile: compile,
+		version: '2.0.0'
+	};
+
+	// Default Options
 	var defaults = {
 		cache: true,
 		openTag: '<%',
 		closeTag: '%>'
 	};
 
-	var caches = {};
+	// Cache map
+	var cache = {};
 
-	var config = function(key, value) {
+	var isArray = Array.isArray || function(obj) {
+		return Object.toString.call(obj) === '[object Array]';
+	};
+
+	// Configure function
+	function config(key, value) {
 		if (typeof arguments.length === 1) {
 			for (var i in defaults) {
 				defaults[i] = key[i];
@@ -23,47 +37,78 @@
 		} else {
 			defaults[key] = value;
 		}
-	};
+	}
 
-	var render = function(template, data, options) {
-		if (!caches[template]) {
-			caches[template] = compile(template, data, options);
+	function each(obj, iterator) {
+		if (isArray(obj)) {
+			for (var i = 0, l = obj.length; i < l; ++i) {
+				iterator(obj[i], i);
+			}
+		} else {
+			for (var key in obj) {
+				iterator(obj[key], key);
+			}
 		}
-		return caches[template](data);
-	};
+	}
 
-	var compile = function(template, data, options) {
+	// Return the rendering template
+	function render(template, data, options) {
+		// Save the compiled function
+		if (!cache[template]) {
+			cache[template] = compile(template, data, options);
+		}
+		return cache[template](data);
+	}
+
+	// Return the compiled function
+	function compile(template, data, options) {
 		var openTag, closeTag, code = 'var ';
 		data = data || {};
 		options = options || {};
 		openTag = options.openTag || defaults.openTag;
 		closeTag = options.closeTag || defaults.closeTag;
+
+		// Extract variables
 		for (var key in data) {
 			code += key + '=__data__[\'' + key + '\'],';
 		}
-		code = code + '__ret__=\'';
-		template = template.replace(/\s+/g, ' ').replace(/'/g, '"');
-		template = template.replace(new RegExp(openTag + '= *(.+?) *' + closeTag, 'g'), '\'+($1)+\'');
-		template = template.replace(new RegExp(openTag + ' *(.+?) *' + closeTag, 'g'), '\';$1\n__ret__+=\'');
-		code += template + '\';return __ret__;';
-		return new Function('__data__', code);
-	};
 
-	var gotpl = {
-		render: render,
-		compile: compile,
-		version: '1.2.0'
-	};
+		code += '__ret__=\'\';';
+
+		// Parse the template
+		template = template.replace(/\s+/g, ' ');
+		each(template.split(closeTag), function(segment) {
+			var split = segment.split(openTag),
+				html = split[0],
+				logic = split[1];
+			code += parseHTML(html);
+			if (logic) {
+				if (logic.indexOf('=') === 0) {
+					code += parseValue(logic.slice(1));
+				} else {
+					code += logic;
+				}
+			}
+		});
+
+		code += 'return __ret__;';
+
+		return new Function('__data__', code);
+	}
+
+	function parseHTML(code) {
+		return '__ret__+=\'' + code.replace(/('|\\)/g, '\\$1') + '\';';
+	}
+
+	function parseValue(code) {
+		return '__ret__+=(' + code + ');';
+	}
 
 	// Expose
 	if (typeof module === 'object' && typeof module.exports === 'object') {
 		module.exports = gotpl;
 	} else if (typeof define === "function") {
-		if (define.cmd) {
-			define(gotpl);
-		} else if (define.amd) {
-			define("gotpl", [], gotpl);
-		}
+		define(gotpl);
 	} else {
 		global.gotpl = gotpl;
 	}
