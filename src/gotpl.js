@@ -1,5 +1,5 @@
 /**
- * GoTpl 2.0.0
+ * GoTpl 2.1.0
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
  * A lightweight template engine with cache mechanism
@@ -11,7 +11,7 @@
 	var gotpl = {
 		render: render,
 		compile: compile,
-		version: '2.0.0'
+		version: '2.1.0'
 	};
 
 	// Default Options
@@ -67,6 +67,11 @@
 		options = options || {};
 		openTag = options.openTag || defaults.openTag;
 		closeTag = options.closeTag || defaults.closeTag;
+
+		// Parse `typeof`
+		template.replace(/typeof ([$\w]+)/g, function(_, $1){
+			data[$1] = undefined;
+		});
 
 		// Extract variables
 		for (var key in data) {
