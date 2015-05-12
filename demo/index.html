@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>GoTpl Demo</title>
+</head>
+<body>
+	<h1>Projects</h1>
+	<ul id="list"></ul>
+
+	<script id="tpl" type="text/template">
+	<% if (projects.length) { %>
+		<% for (var i = 0, l = projects.length; i < l; ++i){ %>
+			<% var item = projects[i]; %>
+			<li class="item">
+				<a target="_blank" href="<%=item.url%>"><%=item.name%></a>
+			</li>
+		<% } %>
+	<% } %>
+	</script>
+
+	<script src="../src/gotpl.js"></script>
+	<script src="main.js"></script>
+</body>
+</html>

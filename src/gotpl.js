@@ -9,6 +9,7 @@
 
 	// GoTpl
 	var gotpl = {
+		config: config,
 		render: render,
 		compile: compile,
 		version: '2.1.0'
