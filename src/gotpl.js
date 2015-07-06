@@ -1,5 +1,5 @@
 /**
- * GoTpl 2.1.0
+ * GoTpl 2.1.1
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
  * A lightweight template engine with cache mechanism
@@ -43,7 +43,7 @@
 
 	// Configure function
 	function config(key, value) {
-		if (typeof arguments.length === 1) {
+		if (typeof key === 'object') {
 			for (var i in defaults) {
 				defaults[i] = key[i];
 			}
