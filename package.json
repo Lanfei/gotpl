@@ -1,6 +1,6 @@
 {
 	"name": "GoTpl",
-	"version": "2.2.1",
+	"version": "3.0.0",
 	"author": "Lanfei<CooLanfei@163.com>",
 	"description": "A single template engine with cache mechanism",
 	"homepage": "https://github.com/Lanfei/GoTpl",

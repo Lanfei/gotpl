@@ -1,7 +1,7 @@
 GoTpl
 =======
 
-A lightweight template engine for JavaScript
+A lightweight template engine with cache mechanism.
 
 Speed Test
 ----------
