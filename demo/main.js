@@ -14,7 +14,7 @@
 			name: 'GoTpl',
 			url: 'https://github.com/Lanfei/GoTpl'
 		}, {
-			name: 'GoNode<img src="https://www.baidu.com/img/baidu_jgylogo3.gif">',
+			name: 'GoNode',
 			url: 'https://github.com/Lanfei/GoNode'
 		}]
 	};
