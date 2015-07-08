@@ -1,22 +1,22 @@
 /**
- * GoTpl 3.0.0
+ * GoTpl 4.0.0
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
  * A lightweight template engine with cache mechanism.
  */
 (function(global) {
 
-	// GoTpl
 	var gotpl = {
 		config: config,
 		render: render,
 		renderFile: renderFile,
 		compile: compile,
-		version: '3.0.0'
+		version: '4.0.0'
 	};
 
 	// Default Options
 	var defOpts = {
+		base: '',
 		cache: true,
 		openTag: '<%',
 		closeTag: '%>'
@@ -31,18 +31,17 @@
 		'&': '&#38;'
 	};
 
-	// Cache map
-	var cache = {};
+	// Caches
+	var tplCache = {};
+	var fileCache = {};
 
-	function each(arr, iterator) {
-		if (arr.forEach) {
-			arr.forEach(iterator);
-		} else {
-			for (var i = 0, l = arr.length; i < l; ++i) {
-				iterator(arr[i], i);
-			}
+	var clone = Object.create || function(obj) {
+		var newObj = {};
+		for (var key in obj) {
+			newObj[key] = obj[key];
 		}
-	}
+		return newObj;
+	};
 
 	// Configure function
 	function config(key, value) {
@@ -57,34 +56,75 @@
 
 	// Return the rendering template
 	function render(template, data, options) {
-		// Save the compiled function
-		if (!cache[template]) {
-			cache[template] = compile(template, data, options);
+		var key,
+			cache,
+			compiled;
+		// Check witch cache to use
+		if (options && options.base) {
+			cache = fileCache;
+			key = options.base;
+		} else {
+			cache = tplCache;
+			key = template;
 		}
-		return cache[template](data, escapeHTML);
+		compiled = cache[key];
+		if (!compiled) {
+			compiled = compile(template, data, options);
+			// Cache the compiled function
+			if (defOpts.cache) {
+				cache[key] = compiled;
+			}
+		}
+		return compiled(data, escapeHTML, function(path, partialData) {
+			return renderFileSync(path, partialData || data, Object.create(options));
+		});
 	}
 
-	// Just for Node/io.js
+	// Render file for Node/io.js
 	function renderFile(path, data, options, next) {
-		if (arguments.length === 2) {
-			next = data;
-			data = null;
-		} else if (arguments.length === 3) {
-			next = options;
-			options = null;
+		var args = Array.prototype.slice.call(arguments);
+		next = args.pop();
+		path = args.shift();
+		data = args.shift();
+		options = args.shift();
+		try {
+			next(null, renderFileSync(path, data, options));
+		} catch (err) {
+			next(err);
 		}
+	}
+
+	// Render file in sync for Node/io.js
+	function renderFileSync(path, data, options) {
+		options = options || {};
 		var fs = require('fs');
-		fs.readFile(path, function(err, file) {
-			var html;
-			if (!err) {
-				try {
-					html = render(file.toString(), data, options);
-				} catch (e) {
-					err = e;
-				}
+		var filename = resolvePath(path, options.base);
+		var template;
+		if (!fileCache[filename]) {
+			template = fs.readFileSync(filename).toString()
+		}
+		options.base = filename;
+		return render(template, data, options);
+	}
+
+	// Resolve the template path for Node/io.js
+	function resolvePath(filename, base) {
+		var path = require('path');
+		if (!path.isAbsolute(filename)) {
+			if (base) {
+				base = path.resolve(base);
+			} else {
+				base = defOpts.base;
 			}
-			next(err, html);
-		});
+			if (path.extname(base)) {
+				base = path.dirname(base);
+			}
+			filename = path.join(base, filename);
+		}
+		if (!path.extname(filename)) {
+			filename += '.tpl';
+		}
+		return filename;
 	}
 
 	// Return the compiled function
@@ -109,7 +149,7 @@
 
 		// Parse the template
 		template = template.replace(/\s+/g, ' ');
-		each(template.split(closeTag), function(segment) {
+		template.split(closeTag).forEach(function(segment) {
 			var split = segment.split(openTag),
 				html = split[0],
 				logic = split[1];
@@ -127,7 +167,7 @@
 
 		code += 'return __ret__;';
 
-		return new Function('__data__, __escape__', code);
+		return new Function('__data__, __escape__, include', code);
 	}
 
 	function parseHTML(code) {
