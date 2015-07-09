@@ -1,201 +1,254 @@
 /**
- * GoTpl 4.0.0
+ * GoTpl 4.1.0
  * https://github.com/Lanfei/GoTpl
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
- * A lightweight template engine with cache mechanism.
+ * A lightweight, high-performance JavaScript template engine.
  */
-(function(global) {
+(function (global) {
+    var gotpl = {
+        config: config,
+        render: render,
+        renderFile: renderFile,
+        renderFileSync: renderFileSync,
+        compile: compile,
+        version: '4.1.0'
+    };
 
-	var gotpl = {
-		config: config,
-		render: render,
-		renderFile: renderFile,
-		compile: compile,
-		version: '4.0.0'
-	};
+    /**
+     * Default Options
+     */
+    var defOpts = {
+        /** The root of template files */
+        root: '',
+        /** Whether to cache the rendering function */
+        cache: true,
+        /** Open tag, defaulting to "<%" */
+        openTag: '<%',
+        /** Close tag, defaulting to "%>" */
+        closeTag: '%>'
+    };
 
-	// Default Options
-	var defOpts = {
-		base: '',
-		cache: true,
-		openTag: '<%',
-		closeTag: '%>'
-	};
+    // Environment checking
+    var hasDefine = typeof define === 'function',
+        hasExports = typeof module !== 'undefined' && module.exports;
 
-	// Special HTML characters
-	var escapeMap = {
-		'<': '&#60;',
-		'>': '&#62;',
-		'"': '&#34;',
-		"'": '&#39;',
-		'&': '&#38;'
-	};
+    // Special HTML characters
+    var ESCAPE_MAP = {
+        '<': '&#60;',
+        '>': '&#62;',
+        '"': '&#34;',
+        "'": '&#39;',
+        '&': '&#38;'
+    };
 
-	// Caches
-	var tplCache = {};
-	var fileCache = {};
+    // Patterns
+    var SPACE_RE = /\s+/g,
+        ESCAPE_RE = /('|\\)/g,
+        TYPEOF_RE = /typeof ([$\w]+)/g;
 
-	var clone = Object.create || function(obj) {
-		var newObj = {};
-		for (var key in obj) {
-			newObj[key] = obj[key];
-		}
-		return newObj;
-	};
+    // Rendering caches
+    var tplCache = {},
+        fileCache = {};
 
-	// Configure function
-	function config(key, value) {
-		if (typeof key === 'object') {
-			for (var i in defOpts) {
-				defOpts[i] = key[i];
-			}
-		} else {
-			defOpts[key] = value;
-		}
-	}
+    /**
+     * The configure function.
+     * @param {Object} options The properties to merge in default options
+     */
+    function config(options) {
+        if (typeof options === 'object') {
+            merge(defOpts, options);
+        } else if (arguments.length === 2) {
+            defOpts[arguments[0]] = arguments[1];
+        }
+    }
 
-	// Return the rendering template
-	function render(template, data, options) {
-		var key,
-			cache,
-			compiled;
-		// Check witch cache to use
-		if (options && options.base) {
-			cache = fileCache;
-			key = options.base;
-		} else {
-			cache = tplCache;
-			key = template;
-		}
-		compiled = cache[key];
-		if (!compiled) {
-			compiled = compile(template, data, options);
-			// Cache the compiled function
-			if (defOpts.cache) {
-				cache[key] = compiled;
-			}
-		}
-		return compiled(data, escapeHTML, function(path, partialData) {
-			return renderFileSync(path, partialData || data, Object.create(options));
-		});
-	}
+    /**
+     * Merge giving objects into first object.
+     * @param  {Object}    target  The object to merge in
+     * @param  {...Object} objects Additional objects to merge in
+     * @return {Object}
+     */
+    function merge(target, /*...*/objects) {
+        target = target || {};
+        for (var i = 1, l = arguments.length; i < l; ++i) {
+            var object = arguments[i];
+            for (var key in object) {
+                target[key] = object[key];
+            }
+        }
+        return target;
+    }
 
-	// Render file for Node/io.js
-	function renderFile(path, data, options, next) {
-		var args = Array.prototype.slice.call(arguments);
-		next = args.pop();
-		path = args.shift();
-		data = args.shift();
-		options = args.shift();
-		try {
-			next(null, renderFileSync(path, data, options));
-		} catch (err) {
-			next(err);
-		}
-	}
+    /**
+     * Resolve the template path in CommonJS environment.
+     * @param  {String} filename Filename of the template
+     * @param  {String} [base]   Base path
+     * @return {String}          Absolute path of the template file
+     */
+    function resolvePath(filename, base) {
+        var path = require('path');
+        if (!path.isAbsolute(filename)) {
+            if (base) {
+                base = path.resolve(base);
+            } else {
+                base = defOpts.root;
+            }
+            if (path.extname(base)) {
+                base = path.dirname(base);
+            }
+            filename = path.join(base, filename);
+        }
+        if (!path.extname(filename)) {
+            filename += '.tpl';
+        }
+        return filename;
+    }
 
-	// Render file in sync for Node/io.js
-	function renderFileSync(path, data, options) {
-		options = options || {};
-		var fs = require('fs');
-		var filename = resolvePath(path, options.base);
-		var template;
-		if (!fileCache[filename]) {
-			template = fs.readFileSync(filename).toString()
-		}
-		options.base = filename;
-		return render(template, data, options);
-	}
+    /**
+     * Render the giving template.
+     * @param   {String} template  Template source
+     * @param   {Object} [data]    Template data
+     * @param   {Object} [options] Rendering options
+     * @returns {String}
+     */
+    function render(template, data, options) {
+        var compiled = tplCache[template];
+        if (!compiled) {
+            options = merge({}, defOpts, options);
+            compiled = compile(template, data, options);
+            // Cache the compiled function
+            if (options.cache) {
+                tplCache[template] = compiled;
+            }
+        }
+        return compiled(data);
+    }
 
-	// Resolve the template path for Node/io.js
-	function resolvePath(filename, base) {
-		var path = require('path');
-		if (!path.isAbsolute(filename)) {
-			if (base) {
-				base = path.resolve(base);
-			} else {
-				base = defOpts.base;
-			}
-			if (path.extname(base)) {
-				base = path.dirname(base);
-			}
-			filename = path.join(base, filename);
-		}
-		if (!path.extname(filename)) {
-			filename += '.tpl';
-		}
-		return filename;
-	}
+    /**
+     * Render the file asynchronously.
+     * @param {String}          path      Template file path
+     * @param {Object|Function} [data]    Template data
+     * @param {Object|Function} [options] Rendering options
+     * @param {Function}        [next]    Callback
+     */
+    function renderFile(path, data, options, next) {
+        var args = Array.prototype.slice.call(arguments);
+        next = args.pop();
+        path = args.shift();
+        data = args.shift();
+        options = args.shift();
+        try {
+            next(null, renderFileSync(path, data, options));
+        } catch (err) {
+            next(err);
+        }
+    }
 
-	// Return the compiled function
-	function compile(template, data, options) {
-		var openTag, closeTag, code = 'var ';
-		data = data || {};
-		options = options || {};
-		openTag = options.openTag || defOpts.openTag;
-		closeTag = options.closeTag || defOpts.closeTag;
+    /**
+     * Render the file synchronously.
+     * @param {String} path      Template file path
+     * @param {Object} [data]    Template data
+     * @param {Object} [options] Rendering options
+     */
+    function renderFileSync(path, data, options) {
+        if (!hasExports) {
+            throw new Error('Please use `render` instead in browser environment.');
+        }
+        options = merge({}, options);
+        var fs = require('fs');
+        var filename = resolvePath(path, options.filename || options.root);
+        var compiled = fileCache[filename];
+        if (!compiled) {
+            options.filename = filename;
+            var template = fs.readFileSync(filename).toString();
+            compiled = compile(template, data, options);
+        }
+        return compiled(data);
+    }
 
-		// Parse `typeof`
-		template.replace(/typeof ([$\w]+)/g, function(_, $1) {
-			data[$1] = undefined;
-		});
+    /**
+     * Return the compiled function.
+     * @param {String} template  Template source
+     * @param {Object} [data]    Template data
+     * @param {Object} [options] Rendering options
+     * @return {Function}
+     */
+    function compile(template, data, options) {
+        var openTag, closeTag, code = 'var ';
+        data = data || {};
+        options = merge({}, defOpts, options);
+        openTag = options.openTag;
+        closeTag = options.closeTag;
 
-		// Extract variables
-		for (var key in data) {
-			code += key + '=__data__[\'' + key + '\'],';
-		}
+        // Parse `typeof`
+        template.replace(TYPEOF_RE, function (_, $1) {
+            data[$1] = data[$1] || undefined;
+        });
 
-		code += '__ret__=\'\';';
+        // Extract variables
+        for (var key in data) {
+            code += key + '=__data__[\'' + key + '\'],';
+        }
 
-		// Parse the template
-		template = template.replace(/\s+/g, ' ');
-		template.split(closeTag).forEach(function(segment) {
-			var split = segment.split(openTag),
-				html = split[0],
-				logic = split[1];
-			code += parseHTML(html);
-			if (logic) {
-				if (logic.indexOf('=') === 0) {
-					code += parseValue(logic.slice(1), true);
-				} else if (logic.indexOf('-') === 0) {
-					code += parseValue(logic.slice(1));
-				} else {
-					code += logic;
-				}
-			}
-		});
+        code += '__ret__=\'\';';
 
-		code += 'return __ret__;';
+        // Parse the template
+        template = template.replace(SPACE_RE, ' ');
+        template.split(closeTag).forEach(function (segment) {
+            var split = segment.split(openTag),
+                html = split[0],
+                logic = split[1];
+            code += parseHTML(html);
+            if (logic) {
+                if (logic.indexOf('=') === 0) {
+                    code += parseValue(logic.slice(1), true);
+                } else if (logic.indexOf('-') === 0) {
+                    code += parseValue(logic.slice(1));
+                } else {
+                    code += logic;
+                }
+            }
+        });
 
-		return new Function('__data__, __escape__, include', code);
-	}
+        code += 'return __ret__;';
 
-	function parseHTML(code) {
-		return '__ret__+=\'' + code.replace(/('|\\)/g, '\\$1') + '\';';
-	}
+        var fn = new Function('__data__, __escape__, include', code);
 
-	function parseValue(code, escape) {
-		if (escape) {
-			code = '__escape__(' + code + ')';
-		}
-		return '__ret__+=(' + code + ');';
-	}
+        // Wrap the escape&include function
+        return function (data) {
+            return fn.call(null, data, escapeHTML, function (path, subData) {
+                subData = merge({}, data, subData);
+                return renderFileSync(path, subData, options);
+            });
+        };
+    }
 
-	function escapeChar(char) {
-		return escapeMap[char];
-	}
+    function parseHTML(code) {
+        return '__ret__+=\'' + code.replace(ESCAPE_RE, '\\$1') + '\';';
+    }
 
-	function escapeHTML(value) {
-		return String(value).replace(/&(?![\w#]+;)|[<>"']/g, escapeChar);
-	}
+    function parseValue(code, escape) {
+        if (escape) {
+            code = '__escape__(' + code + ')';
+        }
+        return '__ret__+=(' + code + ');';
+    }
 
-	// Expose
-	if (typeof module === 'object' && typeof module.exports === 'object') {
-		module.exports = gotpl;
-	} else if (typeof define === "function") {
-		define(gotpl);
-	} else {
-		global.gotpl = gotpl;
-	}
+    function escapeChar(char) {
+        return ESCAPE_MAP[char];
+    }
+
+    function escapeHTML(value) {
+        return String(value).replace(/&(?![\w#]+;)|[<>"']/g, escapeChar);
+    }
+
+    // Expose
+    if (hasExports) {
+        module.exports = gotpl;
+    } else if (hasDefine) {
+        define(gotpl);
+    } else {
+        global.gotpl = gotpl;
+    }
 
 })(this);

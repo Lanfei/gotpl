@@ -7,8 +7,7 @@
 <script src="js/highcharts.js"></script>
 
 <script src="../src/gotpl.min.js"></script>
-<script src="js/template4js.js"></script>
-<script src="js/template-native.js"></script>
+<script src="js/artTemplate.js"></script>
 <script src="js/tmpl.js"></script>
 <script src="js/doT.js"></script>
 <script src="js/juicer.js"></script>
@@ -46,25 +45,6 @@ for (var i = 0; i < length; i ++) {
 var testList = [
 
 	{
-		name: 'GoTpl',
-		tester: function () {
-			var source = document.getElementById('gotpl').innerHTML;
-			for (var i = 0; i < number; i ++) {
-				gotpl.render(source, data);
-			}
-		}
-	},
-
-	{
-		name: 'template4js',
-		tester: function () {
-			for (var i = 0; i < number; i ++) {
-				template4js('template4js', data);
-			}
-		}
-	},
-
-	{
 		name: 'artTemplate',
 		tester: function () {
 			//template.config('escape', false);
@@ -72,6 +52,16 @@ var testList = [
 			var fn = template.compile(source);
 			for (var i = 0; i < number; i ++) {
 				fn(data);
+			}
+		}
+	},
+
+	{
+		name: 'gotpl',
+		tester: function () {
+			var source = document.getElementById('gotpl').innerHTML;
+			for (var i = 0; i < number; i ++) {
+				gotpl.render(source, data);
 			}
 		}
 	},
@@ -321,15 +311,6 @@ var startTest = function () {
 <ul>
 	<% for (var i = 0, l = list.length; i < l; i ++) { %>
 		<li>用户: <%-list[i].user%>/ 网站：<%-list[i].site%></li>
-	<% } %>
-</ul>
-</script>
-
-<!-- template4js 的模板 -->
-<script id="template4js" type="text/tmpl">
-<ul>
-	<% for (var i = 0, l = list.length; i < l; i ++) { %>
-		<li>用户: <%=list[i].user%>/ 网站：<%=list[i].site%></li>
 	<% } %>
 </ul>
 </script>

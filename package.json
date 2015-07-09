@@ -1,8 +1,8 @@
 {
-	"name": "GoTpl",
-	"version": "4.0.0",
+	"name": "gotpl",
+	"version": "4.1.0",
 	"author": "Lanfei<CooLanfei@163.com>",
-	"description": "A single template engine with cache mechanism",
+	"description": "A lightweight, high-performance JavaScript template engine.",
 	"homepage": "https://github.com/Lanfei/GoTpl",
 	"dependencies": {
 		"grunt": "~0.4.2",
