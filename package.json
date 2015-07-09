@@ -1,9 +1,29 @@
 {
   "name": "gotpl",
-  "version": "4.1.1",
-  "author": "Lanfei<CooLanfei@163.com>",
-  "description": "A lightweight, high-performance JavaScript template engine.",
+  "version": "4.1.2",
   "homepage": "https://github.com/Lanfei/GoTpl",
+  "description": "A lightweight, high-performance JavaScript template engine.",
+  "author": {
+    "name": "Lanfei",
+    "url": "http://www.clanfei.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Lanfei/GoTpl"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Lanfei/GoTpl/blob/master/LICENSE"
+    }
+  ],
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "keywords": [
+    "template",
+    "tpl"
+  ],
   "main": "lib/gotpl.js",
   "devDependencies": {
     "grunt": "^0.4.5",

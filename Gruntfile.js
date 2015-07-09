@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 						banner: '/*! <%= pkg.name %> <%= pkg.version %> | <%= pkg.description %> */\n'
 					},
 					files: {
-						'./src/gotpl.min.js': './src/gotpl.js'
+						'./lib/gotpl.min.js': './lib/gotpl.js'
 					}
 				}
 			}
