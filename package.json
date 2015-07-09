@@ -4,6 +4,7 @@
 	"author": "Lanfei<CooLanfei@163.com>",
 	"description": "A lightweight, high-performance JavaScript template engine.",
 	"homepage": "https://github.com/Lanfei/GoTpl",
+	"main": "lib/gotpl.js",
 	"dependencies": {
 		"grunt": "~0.4.2",
 		"grunt-contrib-uglify": "~0.6.0"
