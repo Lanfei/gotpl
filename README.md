@@ -1,6 +1,6 @@
 # GoTpl
 
-A lightweight template engine with cache mechanism.
+A lightweight, high-performance JavaScript template engine.
 
 ## Example
 
