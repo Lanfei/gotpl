@@ -2,6 +2,12 @@
 
 A lightweight, high-performance JavaScript template engine.
 
+## Installation
+
+```bash
+$ npm install ejs
+```
+
 ## Example
 
 ```html
