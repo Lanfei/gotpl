@@ -5,7 +5,7 @@ A lightweight, high-performance JavaScript template engine.
 ## Installation
 
 ```bash
-$ npm install ejs
+$ npm install gotpl
 ```
 
 ## Example
