@@ -8,7 +8,7 @@ A lightweight, high-performance JavaScript template engine.
 $ npm install gotpl
 ```
 
-## Example
+## Examples
 
 ```html
 <h1>Projects</h1>
@@ -73,9 +73,10 @@ app.set('view engine', 'tpl');
 ## Options
 
 - `root` The root of template files
-- `cache` Enable caching, defaulting to "true"
-- `openTag` Open tag, defaulting to "<%"
-- `closeTag` Close tag, defaulting to "%>"
+- `cache` Enable caching, defaults to `true`
+- `minify` Minify indents, defaults to `true`
+- `openTag` Open tag, defaults to "<%"
+- `closeTag` Close tag, defaults to "%>"
 
 ## Tags
 
