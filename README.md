@@ -1,4 +1,4 @@
-# GoTpl
+# GoTpl [![NPM version][npm-image]][npm-url]
 
 A lightweight, high-performance JavaScript template engine.
 
@@ -102,3 +102,6 @@ Use `include(path[, data, options])` function to import partial templates, and u
 ## Speed Test
 
 [Here is a speed test between 12 Javascript template engine.](http://lanfei.github.io/GoTpl)
+
+[npm-url]: https://npmjs.org/package/gotpl
+[npm-image]: https://badge.fury.io/js/gotpl.svg
