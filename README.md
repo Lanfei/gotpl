@@ -73,6 +73,7 @@ app.set('view engine', 'tpl');
 ## Options
 
 - `root` The root of template files
+- `debug` Enable debug information output, defaults to `false`
 - `cache` Enable caching, defaults to `true`
 - `minify` Minify indents, defaults to `true`
 - `openTag` Open tag, defaults to "<%"
