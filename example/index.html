@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>gotpl Example</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<h1>gotpl</h1>
+<p id="desc">
+	A lightweight, high-performance JavaScript template engine.<br>
+	（
+	<a target="_blank" href="https://www.npmjs.com/package/gotpl">npm</a> |
+	<a target="_blank" href="https://github.com/Lanfei/gotpl">GitHub</a> |
+	<a target="_blank" href="https://gitee.com/lanfei/gotpl">码云</a> |
+	<a target="_blank" href="http://www.clanfei.com">Blog</a>
+	）
+</p>
+<h2>Result</h2>
+<div id="result">
+
+</div>
+<h2>Template</h2>
+<pre id="template">
+&lt;ul&gt;
+	&lt;% if (projects.length) { %&gt;
+		&lt;% for (var i = 0, l = projects.length; i &lt; l; ++i){ %&gt;
+			&lt;% var item = projects[i]; %&gt;
+			&lt;li&gt;
+				&lt;a target="_blank" href="&lt;%= item.url %&gt;"&gt;&lt;%= item.name %&gt;&lt;/a&gt;
+			&lt;/li&gt;
+		&lt;% } %&gt;
+	&lt;% } %&gt;
+&lt;/ul&gt;
+</pre>
+<h2>Data</h2>
+<pre id="data">
+{
+	"projects": [{
+		"name": "gotpl",
+		"url": "https://github.com/Lanfei/gotpl"
+	}, {
+		"name": "webpack-isomorphic",
+		"url": "https://github.com/Lanfei/webpack-isomorphic"
+	}, {
+		"name": "websocket-lib",
+		"url": "https://github.com/Lanfei/websocket-lib"
+	}, {
+		"name": "node-cd-cluster",
+		"url": "https://github.com/Lanfei/node-cd-cluster"
+	}]
+}
+</pre>
+
+<script src="../lib/gotpl.js"></script>
+<script src="js/ace/ace.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

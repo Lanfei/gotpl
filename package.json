@@ -1,8 +1,12 @@
 {
   "name": "gotpl",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "homepage": "https://github.com/Lanfei/GoTpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
+  "scripts": {
+    "uglify": "uglifyjs lib/gotpl.js -o lib/gotpl.min.js -c --comments --source-map",
+    "test": "echo \"Coming soon!\" && exit 1"
+  },
   "author": {
     "name": "Lanfei",
     "url": "http://www.clanfei.com/"
@@ -21,8 +25,6 @@
   ],
   "main": "lib/gotpl.js",
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.4"
+    "uglify-js": "^3.3.12"
   }
 }
