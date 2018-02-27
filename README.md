@@ -10,7 +10,7 @@ $ npm install gotpl
 
 ## Examples
 
-```ejs
+```html
 <h1>Projects</h1>
 <ul id="list"></ul>
 
