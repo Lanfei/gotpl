@@ -1,6 +1,6 @@
 {
   "name": "gotpl",
-  "version": "6.0.2",
+  "version": "6.1.0",
   "homepage": "https://github.com/Lanfei/GoTpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
   "scripts": {
@@ -23,8 +23,8 @@
     "template",
     "tpl"
   ],
-  "main": "lib/gotpl.js",
+  "main": "index.js",
   "devDependencies": {
-    "uglify-js": "^3.3.12"
+    "uglify-js": "^3.4.9"
   }
 }
