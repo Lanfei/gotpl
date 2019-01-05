@@ -10,7 +10,7 @@ $ npm install gotpl
 
 ## Examples
 
-```html
+```ejs
 <h1>Projects</h1>
 <ul id="list"></ul>
 
@@ -89,7 +89,7 @@ app.set('view engine', 'tpl');
 
 Use `include(path[, data, options])` function to import partial templates, and use `<%- value %>` tag to output:
 
-```html
+```ejs
 <h1>Projects</h1>
 <ul id="list"></ul>
 
