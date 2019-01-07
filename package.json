@@ -1,7 +1,7 @@
 {
   "name": "gotpl",
-  "version": "6.1.0",
-  "homepage": "https://github.com/Lanfei/GoTpl",
+  "version": "6.1.1",
+  "homepage": "https://github.com/Lanfei/gotpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
   "scripts": {
     "uglify": "uglifyjs lib/gotpl.js -o lib/gotpl.min.js -c --comments --source-map",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/Lanfei/GoTpl"
+    "url": "git://github.com/Lanfei/gotpl"
   },
   "license": "MIT",
   "engines": {
