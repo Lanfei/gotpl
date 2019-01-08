@@ -11,6 +11,8 @@
 	dataEditor.setHighlightActiveLine(false);
 	dataEditor.on('change', render);
 
+	window.dataLayer = window.dataLayer || [];
+
 	gotpl.config({
 		debug: true
 	});
@@ -33,5 +35,13 @@
 		return ele.innerHTML;
 	}
 
+	function gtag() {
+		dataLayer.push(arguments);
+	}
+
 	render();
+
+	gtag('js', new Date());
+	gtag('config', 'UA-57981079-1');
+	gtag('event', 'pv', {event_category: 'gotpl'});
 })();

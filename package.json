@@ -1,6 +1,6 @@
 {
   "name": "gotpl",
-  "version": "6.1.1",
+  "version": "6.1.2",
   "homepage": "https://github.com/Lanfei/gotpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
   "scripts": {
