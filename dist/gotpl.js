@@ -1,20 +1,27 @@
-/**
- * gotpl
- * https://github.com/Lanfei/gotpl
- * @author  Jealous
- * @license MIT
- */
-(function (global) {
-	'use strict';
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global = global || self, global.gotpl = factory());
+}(this, function () { 'use strict';
 
-	var gotpl = {
-		config: config,
-		render: render,
-		renderFile: renderFile,
-		renderFileSync: renderFileSync,
-		compile: compile,
-		version: '6.1.0'
-	};
+	/*!
+	 * gotpl
+	 * https://github.com/Lanfei/gotpl
+	 * @author  Jealous
+	 * @license MIT
+	 */
+
+	var version = '7.0.0';
+
+	// Patterns
+	var LINE_RE = /\r?\n/g;
+	var INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
+	var ESCAPE_RE = /["'&<>]/;
+	var TYPEOF_RE = /typeof ([$\w]+)/g;
+
+	// Rendering caches
+	var tplCache = {};
+	var fileCache = {};
 
 	/**
 	 * Default Options
@@ -33,24 +40,6 @@
 		/** Close tag, defaults to "%>" */
 		closeTag: '%>'
 	};
-
-	// Node modules
-	var fs;
-	var path;
-
-	// Environment checking
-	var hasDefine = typeof define === 'function';
-	var hasExports = typeof module !== 'undefined' && module.exports;
-
-	// Patterns
-	var LINE_RE = /\r?\n/g;
-	var INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
-	var ESCAPE_RE = /["'&<>]/;
-	var TYPEOF_RE = /typeof ([$\w]+)/g;
-
-	// Rendering caches
-	var tplCache = {};
-	var fileCache = {};
 
 	/**
 	 * The configure function.
@@ -71,16 +60,20 @@
 	 * @return {Object}
 	 */
 	function merge(target, /*...*/objects) {
+		var arguments$1 = arguments;
+
 		target = target || {};
-		for (var i = 1, l = arguments.length; i < l; ++i) {
-			var object = arguments[i];
+		var loop = function ( i, l ) {
+			var object = arguments$1[i];
 			if (!object) {
-				continue;
+				return;
 			}
 			Object.keys(object).forEach(function (key) {
 				target[key] = object[key];
 			});
-		}
+		};
+
+		for (var i = 1, l = arguments.length; i < l; ++i) loop( i, l );
 		return target;
 	}
 
@@ -91,7 +84,7 @@
 	 * @return {String}          Absolute path of the template file
 	 */
 	function resolvePath(filename, base) {
-		path = path || require('path');
+		var path = require('path');
 		if (!path.isAbsolute(filename)) {
 			if (base) {
 				base = path.resolve(base);
@@ -144,16 +137,12 @@
 	 * @returns {String}
 	 */
 	function renderByPath(path, template, data, options) {
-		if (!hasExports) {
-			throw new Error('Please use `render` instead in browser environment.');
-		}
 		options = merge({}, defOpts, options);
 		var filename = resolvePath(path, options.filename || options.root);
 		var compiled = fileCache[filename];
 		if (!compiled) {
-			fs = fs || require('fs');
 			options.filename = filename;
-			template = template || fs.readFileSync(filename).toString();
+			template = template || require('fs').readFileSync(filename).toString();
 			compiled = compile(template, data, options);
 			// Cache the compiled function
 			if (options.cache && !options.debug) {
@@ -171,20 +160,33 @@
 
 	/**
 	 * Render the file asynchronously.
-	 * @param {String}          path      Template file path
-	 * @param {Object|Function} [data]    Template data
-	 * @param {Object|Function} [options] Rendering options
-	 * @param {Function}        [next]    Callback
+	 * @param  {String}          path      Template file path
+	 * @param  {Object|Function} [data]    Template data
+	 * @param  {Object|Function} [options] Rendering options
+	 * @param  {Function}        [next]    Callback
+	 * @return {Promise|void}              Return a promise if callback is not provided
 	 */
 	function renderFile(path, data, options, next) {
-		var args = Array.prototype.slice.call(arguments);
+		var promise;
+		var args = Array.from(arguments);
 		next = args.pop();
 		path = args.shift();
 		data = args.shift();
 		options = args.shift();
 
-		fs = fs || require('fs');
-		fs.readFile(path, function (err, buffer) {
+		if (!next) {
+			promise = new Promise(function (resolve, reject) {
+				next = function (err, data) {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(data);
+					}
+				};
+			});
+		}
+
+		require('fs').readFile(path, function (err, buffer) {
 			if (err) {
 				next(err);
 				return;
@@ -195,6 +197,7 @@
 				next(err);
 			}
 		});
+		return promise;
 	}
 
 	/**
@@ -237,9 +240,9 @@
 		});
 
 		// Extract variables
-		for (var key in data) {
+		Object.keys(data).forEach(function (key) {
 			codes += key + '=__data__[\'' + key + '\'],';
-		}
+		});
 
 		codes += '$$res=\'\'\n';
 
@@ -344,13 +347,15 @@
 		throw err;
 	}
 
-	// Expose
-	if (hasExports) {
-		module.exports = gotpl;
-	} else if (hasDefine) {
-		define(gotpl);
-	} else {
-		global.gotpl = gotpl;
-	}
+	var gotpl = {
+		config: config,
+		render: render,
+		renderFile: renderFile,
+		renderFileSync: renderFileSync,
+		compile: compile,
+		version: version
+	};
 
-})(this);
+	return gotpl;
+
+}));

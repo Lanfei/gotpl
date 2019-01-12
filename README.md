@@ -51,7 +51,7 @@ var tpl = document.getElementById('tpl').innerHTML;
 document.getElementById('list').innerHTML = gotpl.render(tpl, data);
 ```
 
-### Node/io.js
+### Node
 
 ```js
 gotpl.render(str, data, options);
@@ -61,6 +61,8 @@ gotpl.renderFileSync(path, data, options);
 gotpl.renderFile(path, data, options, function(err, html){
 	// Some codes.
 });
+
+await gotpl.renderFile(path, data, options);
 ```
 
 ### Express
