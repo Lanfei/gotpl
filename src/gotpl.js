@@ -347,9 +347,10 @@ function rethrow(err, template, line) {
 
 export default {
 	config,
+	compile,
 	render,
 	renderFile,
 	renderFileSync,
-	compile,
+	escapeHTML,
 	version
 };
