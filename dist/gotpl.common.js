@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-const version = '7.0.1';
+const version = '7.0.2';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
