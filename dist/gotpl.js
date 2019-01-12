@@ -11,7 +11,7 @@
 	 * @license MIT
 	 */
 
-	var version = '7.0.2';
+	var version = '7.0.4';
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;
@@ -356,10 +356,11 @@
 
 	var gotpl = {
 		config: config,
+		compile: compile,
 		render: render,
 		renderFile: renderFile,
 		renderFileSync: renderFileSync,
-		compile: compile,
+		escapeHTML: escapeHTML,
 		version: version
 	};
 

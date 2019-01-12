@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-const version = '7.0.2';
+const version = '7.0.4';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
@@ -348,10 +348,11 @@ function rethrow(err, template, line) {
 
 var gotpl = {
 	config,
+	compile,
 	render,
 	renderFile,
 	renderFileSync,
-	compile,
+	escapeHTML,
 	version
 };
 
