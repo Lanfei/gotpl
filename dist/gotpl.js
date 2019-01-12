@@ -11,7 +11,7 @@
 	 * @license MIT
 	 */
 
-	var version = '7.0.0';
+	var version = '7.0.1';
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;
@@ -79,9 +79,9 @@
 
 	/**
 	 * Resolve the template path in CommonJS environment.
-	 * @param  {String} filename Filename of the template
-	 * @param  {String} [base]   Base path
-	 * @return {String}          Absolute path of the template file
+	 * @param  {string} filename Filename of the template
+	 * @param  {string} [base]   Base path
+	 * @return {string}          Absolute path of the template file
 	 */
 	function resolvePath(filename, base) {
 		var path = require('path');
@@ -104,10 +104,10 @@
 
 	/**
 	 * Render the giving template.
-	 * @param   {String} template  Template source
+	 * @param   {string} template  Template source
 	 * @param   {Object} [data]    Template data
 	 * @param   {Object} [options] Rendering options
-	 * @returns {String}
+	 * @returns {string}
 	 */
 	function render(template, data, options) {
 		var compiled = tplCache[template];
@@ -130,11 +130,11 @@
 
 	/**
 	 * Render the giving path or template.
-	 * @param   {String} path       Template file path
-	 * @param   {String} [template] Template source
+	 * @param   {string} path       Template file path
+	 * @param   {string} [template] Template source
 	 * @param   {Object} [data]     Template data
 	 * @param   {Object} [options]  Rendering options
-	 * @returns {String}
+	 * @returns {string}
 	 */
 	function renderByPath(path, template, data, options) {
 		options = merge({}, defOpts, options);
@@ -160,49 +160,56 @@
 
 	/**
 	 * Render the file asynchronously.
-	 * @param  {String}          path      Template file path
+	 * @param  {string}          path      Template file path
 	 * @param  {Object|Function} [data]    Template data
 	 * @param  {Object|Function} [options] Rendering options
 	 * @param  {Function}        [next]    Callback
 	 * @return {Promise|void}              Return a promise if callback is not provided
 	 */
 	function renderFile(path, data, options, next) {
-		var promise;
-		var args = Array.from(arguments);
-		next = args.pop();
-		path = args.shift();
-		data = args.shift();
-		options = args.shift();
+		var fs = require('fs');
 
-		if (!next) {
-			promise = new Promise(function (resolve, reject) {
-				next = function (err, data) {
+		if (typeof data === 'function') {
+			next = data;
+			data = options = null;
+		} else if (typeof options === 'function') {
+			next = options;
+			options = null;
+		}
+
+		if (next) {
+			fs.readFile(path, function (err, buffer) {
+				if (err) {
+					next(err);
+					return;
+				}
+				try {
+					next(null, renderByPath(path, buffer.toString(), data, options));
+				} catch (err) {
+					next(err);
+				}
+			});
+		} else {
+			return new Promise(function (resolve, reject) {
+				fs.readFile(path, function (err, buffer) {
 					if (err) {
 						reject(err);
-					} else {
-						resolve(data);
+						return;
 					}
-				};
+					try {
+						resolve(renderByPath(path, buffer.toString(), data, options));
+					} catch (err) {
+						reject(err);
+					}
+				});
 			});
 		}
 
-		require('fs').readFile(path, function (err, buffer) {
-			if (err) {
-				next(err);
-				return;
-			}
-			try {
-				next(null, renderByPath(path, buffer.toString(), data, options));
-			} catch (err) {
-				next(err);
-			}
-		});
-		return promise;
 	}
 
 	/**
 	 * Render the file synchronously.
-	 * @param {String} path      Template file path
+	 * @param {string} path      Template file path
 	 * @param {Object} [data]    Template data
 	 * @param {Object} [options] Rendering options
 	 */
@@ -212,7 +219,7 @@
 
 	/**
 	 * Return the compiled function.
-	 * @param {String} template  Template source
+	 * @param {string} template  Template source
 	 * @param {Object} [data]    Template data
 	 * @param {Object} [options] Rendering options
 	 * @return {Function}
