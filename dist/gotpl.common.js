@@ -1,5 +1,12 @@
 'use strict';
 
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var jsTokens = require('js-tokens');
+var jsTokens__default = _interopDefault(jsTokens);
+var isKeyword = _interopDefault(require('is-keyword-js'));
+var escapeHTML = _interopDefault(require('escape-html'));
+
 /*!
  * gotpl
  * https://github.com/Lanfei/gotpl
@@ -7,22 +14,20 @@
  * @license MIT
  */
 
-const version = '7.0.4';
+var version = '8.0.0';
 
 // Patterns
-const LINE_RE = /\r?\n/g;
-const INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
-const ESCAPE_RE = /["'&<>]/;
-const TYPEOF_RE = /typeof ([$\w]+)/g;
+var LINE_RE = /\r?\n/g;
+var INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
 
 // Rendering caches
-const tplCache = {};
-const fileCache = {};
+var tplCache = {};
+var fileCache = {};
 
 /**
  * Default Options
  */
-let defOpts = {
+var defOpts = {
 	/** The root of template files */
 	root: '',
 	/** Enable debug information output, defaults to `false` */
@@ -42,11 +47,7 @@ let defOpts = {
  * @param {Object} options The properties to merge in default options
  */
 function config(options) {
-	if (typeof options === 'object') {
-		merge(defOpts, options);
-	} else if (arguments.length === 2) {
-		defOpts[arguments[0]] = arguments[1];
-	}
+	merge(defOpts, options);
 }
 
 /**
@@ -56,16 +57,20 @@ function config(options) {
  * @return {Object}
  */
 function merge(target, /*...*/objects) {
+	var arguments$1 = arguments;
+
 	target = target || {};
-	for (let i = 1, l = arguments.length; i < l; ++i) {
-		let object = arguments[i];
+	var loop = function ( i, l ) {
+		var object = arguments$1[i];
 		if (!object) {
-			continue;
+			return;
 		}
 		Object.keys(object).forEach(function (key) {
 			target[key] = object[key];
 		});
-	}
+	};
+
+	for (var i = 1, l = arguments.length; i < l; ++i) loop( i, l );
 	return target;
 }
 
@@ -76,7 +81,7 @@ function merge(target, /*...*/objects) {
  * @return {string}          Absolute path of the template file
  */
 function resolvePath(filename, base) {
-	const path = require('path');
+	var path = require('path');
 	if (!path.isAbsolute(filename)) {
 		if (base) {
 			base = path.resolve(base);
@@ -102,7 +107,7 @@ function resolvePath(filename, base) {
  * @returns {string}
  */
 function render(template, data, options) {
-	let compiled = tplCache[template];
+	var compiled = tplCache[template];
 	if (!compiled) {
 		options = merge({}, defOpts, options);
 		compiled = compile(template, data, options);
@@ -122,16 +127,16 @@ function render(template, data, options) {
 
 /**
  * Render the giving path or template.
- * @param   {string} path       Template file path
- * @param   {string} [template] Template source
- * @param   {Object} [data]     Template data
- * @param   {Object} [options]  Rendering options
+ * @param   {string}      path       Template file path
+ * @param   {string|null} [template] Template source
+ * @param   {Object}      [data]     Template data
+ * @param   {Object}      [options]  Rendering options
  * @returns {string}
  */
 function renderByPath(path, template, data, options) {
 	options = merge({}, defOpts, options);
-	let filename = resolvePath(path, options.filename || options.root);
-	let compiled = fileCache[filename];
+	var filename = resolvePath(path, options.filename || options.root);
+	var compiled = fileCache[filename];
 	if (!compiled) {
 		options.filename = filename;
 		template = template || require('fs').readFileSync(filename).toString();
@@ -159,7 +164,7 @@ function renderByPath(path, template, data, options) {
  * @return {Promise|void}              Return a promise if callback is not provided
  */
 function renderFile(path, data, options, next) {
-	const fs = require('fs');
+	var fs = require('fs');
 
 	if (typeof data === 'function') {
 		next = data;
@@ -169,34 +174,33 @@ function renderFile(path, data, options, next) {
 		options = null;
 	}
 
-	if (next) {
-		fs.readFile(path, (err, buffer) => {
-			if (err) {
-				next(err);
-				return;
-			}
+	// Return a promise if callback is not provided
+	var promise;
+	if (!next) {
+		promise = new Promise(function (resolve, reject) {
+			next = function (err, data) {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(data);
+				}
+			};
+		});
+	}
+
+	fs.readFile(path, function (err, buffer) {
+		if (err) {
+			next(err);
+		} else {
 			try {
 				next(null, renderByPath(path, buffer.toString(), data, options));
 			} catch (err) {
 				next(err);
 			}
-		});
-	} else {
-		return new Promise((resolve, reject) => {
-			fs.readFile(path, (err, buffer) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				try {
-					resolve(renderByPath(path, buffer.toString(), data, options));
-				} catch (err) {
-					reject(err);
-				}
-			});
-		});
-	}
+		}
+	});
 
+	return promise;
 }
 
 /**
@@ -220,51 +224,39 @@ function compile(template, data, options) {
 	data = merge({}, data);
 	options = merge({}, defOpts, options);
 
-	let lines = 1;
-	let debug = options.debug;
-	let minify = options.minify;
-	let openTag = options.openTag;
-	let closeTag = options.closeTag;
-	let codes = 'return function(__data__){\n\'use strict\'\n';
+	var lines = 1;
+	var variables = [];
+	var debug = options.debug;
+	var minify = options.minify;
+	var openTag = options.openTag;
+	var closeTag = options.closeTag;
+	var globalObj = typeof global !== 'undefined' ? global : self;
+	var codes = "var $$res = '';\n";
 
 	if (debug) {
-		codes += 'try{var $$line=1,';
-	} else {
-		codes += 'var ';
+		codes = "var $$line;\n" + codes + "try{\n$$line = 1;\t";
 	}
 
-	// Parse `typeof`
-	template.replace(TYPEOF_RE, (_, $1) => {
-		data[$1] = data[$1] || undefined;
-	});
-
-	// Extract variables
-	Object.keys(data).forEach(key => {
-		codes += key + '=__data__[\'' + key + '\'],';
-	});
-
-	codes += '$$res=\'\'\n';
-
 	// Parse the template
-	template.split(closeTag).forEach(segment => {
-		let split = segment.split(openTag);
-		let html = split[0];
-		let logic = split[1];
+	template.split(closeTag).forEach(function (segment) {
+		var split = segment.split(openTag);
+		var html = split[0];
+		var logic = split[1];
 		if (html) {
-			let htmlCode = parseHTML(html);
+			var htmlCode = parseHTML(html);
 			if (minify) {
 				htmlCode = htmlCode.replace(INDENT_RE, '\\n');
 			} else {
 				htmlCode = htmlCode.replace(INDENT_RE, '\\n$1');
 			}
-			codes += htmlCode + '\n';
+			codes += htmlCode + ';\n';
 			if (debug) {
 				lines += html.split(LINE_RE).length - 1;
-				codes += '$$line=' + lines + ';	';
+				codes += "$$line = " + lines + ";\t";
 			}
 		}
 		if (logic) {
-			let logicCode;
+			var logicCode;
 			if (logic.indexOf('=') === 0) {
 				logicCode = parseValue(logic.slice(1), true);
 			} else if (logic.indexOf('-') === 0) {
@@ -273,20 +265,34 @@ function compile(template, data, options) {
 				logicCode = logic.trim();
 			}
 			codes += logicCode + '\n';
+			logicCode
+				.match(jsTokens__default)
+				.map(function (keyword) {
+					jsTokens__default.lastIndex = 0;
+					return jsTokens.matchToToken(jsTokens__default.exec(keyword));
+				}).forEach(function (token) {
+				var type = token.type;
+				var value = token.value;
+				if (type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$') {
+					variables.push(value);
+				}
+			});
 			if (debug) {
 				lines += logic.split(LINE_RE).length - 1;
-				codes += '$$line=' + lines + ';	';
+				codes += "$$line = " + lines + ";\t";
 			}
 		}
 	});
 
-	codes += 'return $$res';
+	codes += 'return $$res;\n';
+
+	codes = parseVariables(variables) + codes;
 
 	if (debug) {
-		codes += '\n}catch(e){\n$$rethrow(e, $$template, $$line)\n}\n}';
-	} else {
-		codes += '\n}';
+		codes += '}catch(e){\n$$rethrow(e, $$template, $$line);\n}\n';
 	}
+
+	codes = "return function($$data){\n'use strict';\n" + codes + "}";
 
 	function include(path, subData, subOptions) {
 		subData = merge({}, data, subData);
@@ -294,66 +300,48 @@ function compile(template, data, options) {
 		return renderFileSync(path, subData, subOptions);
 	}
 
-	return new Function('$$template, $$escape, $$rethrow, include', codes)(template, escapeHTML, rethrow, include);
+	return new Function('$$global', '$$template, $$escape, $$rethrow, include', codes)(globalObj, template, escapeHTML, rethrow, include);
 }
 
 function parseHTML(codes) {
-	return '$$res+=' + JSON.stringify(codes);
+	return '$$res += ' + JSON.stringify(codes);
 }
 
 function parseValue(codes, escape) {
 	if (escape) {
-		codes = '$$escape(' + codes.trim() + ')';
+		return '$$res += $$escape(' + codes.trim() + ')';
+	} else {
+		return '$$res += (' + codes + ')';
 	}
-	return '$$res+=(' + codes + ')';
 }
 
-function escapeHTML(value) {
-	let html = '' + value;
-	let match = ESCAPE_RE.exec(html);
-	if (!match) {
-		return value;
-	}
-
-	let result = '';
-	let lastIndex = 0;
-	let i = match.index;
-	let length = html.length;
-	for (; i < length; i++) {
-		let charCode = html.charCodeAt(i);
-		if (charCode === 34 || charCode === 38 || charCode === 39 || charCode === 60 || charCode === 62) {
-			if (lastIndex !== i) {
-				result += html.substring(lastIndex, i);
-			}
-			lastIndex = i + 1;
-			result += '&#' + charCode + ';';
-		}
-	}
-	if (lastIndex !== i) {
-		result += html.substring(lastIndex, i);
-	}
-	return result;
+function parseVariables(variables) {
+	var codes = '$$data = $$data || {};\n';
+	variables.forEach(function (variable) {
+		codes += "var " + variable + " = $$data['" + variable + "'] === undefined ? $$global['" + variable + "'] : $$data['" + variable + "'];\n";
+	});
+	return codes;
 }
 
 function rethrow(err, template, line) {
-	let lines = template.split(LINE_RE);
-	let start = Math.max(line - 3, 0);
-	let end = Math.min(lines.length, line + 3);
-	err.message += '\n\n' + lines.slice(start, end).map((codes, i) => {
-		let curLine = start + i + 1;
+	var lines = template.split(LINE_RE);
+	var start = Math.max(line - 3, 0);
+	var end = Math.min(lines.length, line + 3);
+	err.message += '\n\n' + lines.slice(start, end).map(function (codes, i) {
+		var curLine = start + i + 1;
 		return (curLine === line ? ' >> ' : '    ') + curLine + '| ' + codes;
 	}).join('\n') + '\n';
 	throw err;
 }
 
 var gotpl = {
-	config,
-	compile,
-	render,
-	renderFile,
-	renderFileSync,
-	escapeHTML,
-	version
+	config: config,
+	compile: compile,
+	render: render,
+	renderFile: renderFile,
+	renderFileSync: renderFileSync,
+	escapeHTML: escapeHTML,
+	version: version
 };
 
 module.exports = gotpl;

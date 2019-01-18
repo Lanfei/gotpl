@@ -4,6 +4,189 @@
 	(global = global || self, global.gotpl = factory());
 }(this, function () { 'use strict';
 
+	function unwrapExports (x) {
+		return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x.default : x;
+	}
+
+	function createCommonjsModule(fn, module) {
+		return module = { exports: {} }, fn(module, module.exports), module.exports;
+	}
+
+	var jsTokens = createCommonjsModule(function (module, exports) {
+	// Copyright 2014, 2015, 2016, 2017, 2018 Simon Lydell
+	// License: MIT. (See LICENSE.)
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	// This regex comes from regex.coffee, and is inserted here by generate-index.js
+	// (run `npm run build`).
+	exports.default = /((['"])(?:(?!\2|\\).|\\(?:\r\n|[\s\S]))*(\2)?|`(?:[^`\\$]|\\[\s\S]|\$(?!\{)|\$\{(?:[^{}]|\{[^}]*\}?)*\}?)*(`)?)|(\/\/.*)|(\/\*(?:[^*]|\*(?!\/))*(\*\/)?)|(\/(?!\*)(?:\[(?:(?![\]\\]).|\\.)*\]|(?![\/\]\\]).|\\.)+\/(?:(?!\s*(?:\b|[\u0080-\uFFFF$\\'"~({]|[+\-!](?!=)|\.?\d))|[gmiyus]{1,6}\b(?![\u0080-\uFFFF$\\]|\s*(?:[+\-*%&|^<>!=?({]|\/(?![\/*])))))|(0[xX][\da-fA-F]+|0[oO][0-7]+|0[bB][01]+|(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)|((?!\d)(?:(?!\s)[$\w\u0080-\uFFFF]|\\u[\da-fA-F]{4}|\\u\{[\da-fA-F]+\})+)|(--|\+\+|&&|\|\||=>|\.{3}|(?:[+\-\/%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2})=?|[?~.,:;[\](){}])|(\s+)|(^$|[\s\S])/g;
+
+	exports.matchToToken = function(match) {
+	  var token = {type: "invalid", value: match[0], closed: undefined};
+	       if (match[ 1]) { token.type = "string" , token.closed = !!(match[3] || match[4]); }
+	  else if (match[ 5]) { token.type = "comment"; }
+	  else if (match[ 6]) { token.type = "comment", token.closed = !!match[7]; }
+	  else if (match[ 8]) { token.type = "regex"; }
+	  else if (match[ 9]) { token.type = "number"; }
+	  else if (match[10]) { token.type = "name"; }
+	  else if (match[11]) { token.type = "punctuator"; }
+	  else if (match[12]) { token.type = "whitespace"; }
+	  return token
+	};
+	});
+
+	var jsTokens$1 = unwrapExports(jsTokens);
+	var jsTokens_1 = jsTokens.matchToToken;
+
+	// List extracted from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
+	var reservedKeywords = {
+	    'abstract': true,
+	    'await': true,
+	    'boolean': true,
+	    'break': true,
+	    'byte': true,
+	    'case': true,
+	    'catch': true,
+	    'char': true,
+	    'class': true,
+	    'const': true,
+	    'continue': true,
+	    'debugger': true,
+	    'default': true,
+	    'delete': true,
+	    'do': true,
+	    'double': true,
+	    'else': true,
+	    'enum': true,
+	    'export': true,
+	    'extends': true,
+	    'false': true,
+	    'final': true,
+	    'finally': true,
+	    'float': true,
+	    'for': true,
+	    'function': true,
+	    'goto': true,
+	    'if': true,
+	    'implements': true,
+	    'import': true,
+	    'in': true,
+	    'instanceof': true,
+	    'int': true,
+	    'interface': true,
+	    'let': true,
+	    'long': true,
+	    'native': true,
+	    'new': true,
+	    'null': true,
+	    'package': true,
+	    'private': true,
+	    'protected': true,
+	    'public': true,
+	    'return': true,
+	    'short': true,
+	    'static': true,
+	    'super': true,
+	    'switch': true,
+	    'synchronized': true,
+	    'this': true,
+	    'throw': true,
+	    'transient': true,
+	    'true': true,
+	    'try': true,
+	    'typeof': true,
+	    'var': true,
+	    'void': true,
+	    'volatile': true,
+	    'while': true,
+	    'with': true,
+	    'yield': true
+	};
+
+	var isKeywordJs = function(str) {
+	    return reservedKeywords.hasOwnProperty(str);
+	};
+
+	/*!
+	 * escape-html
+	 * Copyright(c) 2012-2013 TJ Holowaychuk
+	 * Copyright(c) 2015 Andreas Lubbe
+	 * Copyright(c) 2015 Tiancheng "Timothy" Gu
+	 * MIT Licensed
+	 */
+
+	/**
+	 * Module variables.
+	 * @private
+	 */
+
+	var matchHtmlRegExp = /["'&<>]/;
+
+	/**
+	 * Module exports.
+	 * @public
+	 */
+
+	var escapeHtml_1 = escapeHtml;
+
+	/**
+	 * Escape special characters in the given string of html.
+	 *
+	 * @param  {string} string The string to escape for inserting into HTML
+	 * @return {string}
+	 * @public
+	 */
+
+	function escapeHtml(string) {
+	  var str = '' + string;
+	  var match = matchHtmlRegExp.exec(str);
+
+	  if (!match) {
+	    return str;
+	  }
+
+	  var escape;
+	  var html = '';
+	  var index = 0;
+	  var lastIndex = 0;
+
+	  for (index = match.index; index < str.length; index++) {
+	    switch (str.charCodeAt(index)) {
+	      case 34: // "
+	        escape = '&quot;';
+	        break;
+	      case 38: // &
+	        escape = '&amp;';
+	        break;
+	      case 39: // '
+	        escape = '&#39;';
+	        break;
+	      case 60: // <
+	        escape = '&lt;';
+	        break;
+	      case 62: // >
+	        escape = '&gt;';
+	        break;
+	      default:
+	        continue;
+	    }
+
+	    if (lastIndex !== index) {
+	      html += str.substring(lastIndex, index);
+	    }
+
+	    lastIndex = index + 1;
+	    html += escape;
+	  }
+
+	  return lastIndex !== index
+	    ? html + str.substring(lastIndex, index)
+	    : html;
+	}
+
 	/*!
 	 * gotpl
 	 * https://github.com/Lanfei/gotpl
@@ -11,13 +194,11 @@
 	 * @license MIT
 	 */
 
-	var version = '7.0.4';
+	var version = '8.0.0';
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;
 	var INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
-	var ESCAPE_RE = /["'&<>]/;
-	var TYPEOF_RE = /typeof ([$\w]+)/g;
 
 	// Rendering caches
 	var tplCache = {};
@@ -46,11 +227,7 @@
 	 * @param {Object} options The properties to merge in default options
 	 */
 	function config(options) {
-		if (typeof options === 'object') {
-			merge(defOpts, options);
-		} else if (arguments.length === 2) {
-			defOpts[arguments[0]] = arguments[1];
-		}
+		merge(defOpts, options);
 	}
 
 	/**
@@ -130,10 +307,10 @@
 
 	/**
 	 * Render the giving path or template.
-	 * @param   {string} path       Template file path
-	 * @param   {string} [template] Template source
-	 * @param   {Object} [data]     Template data
-	 * @param   {Object} [options]  Rendering options
+	 * @param   {string}      path       Template file path
+	 * @param   {string|null} [template] Template source
+	 * @param   {Object}      [data]     Template data
+	 * @param   {Object}      [options]  Rendering options
 	 * @returns {string}
 	 */
 	function renderByPath(path, template, data, options) {
@@ -177,34 +354,33 @@
 			options = null;
 		}
 
-		if (next) {
-			fs.readFile(path, function (err, buffer) {
-				if (err) {
-					next(err);
-					return;
-				}
+		// Return a promise if callback is not provided
+		var promise;
+		if (!next) {
+			promise = new Promise(function (resolve, reject) {
+				next = function (err, data) {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(data);
+					}
+				};
+			});
+		}
+
+		fs.readFile(path, function (err, buffer) {
+			if (err) {
+				next(err);
+			} else {
 				try {
 					next(null, renderByPath(path, buffer.toString(), data, options));
 				} catch (err) {
 					next(err);
 				}
-			});
-		} else {
-			return new Promise(function (resolve, reject) {
-				fs.readFile(path, function (err, buffer) {
-					if (err) {
-						reject(err);
-						return;
-					}
-					try {
-						resolve(renderByPath(path, buffer.toString(), data, options));
-					} catch (err) {
-						reject(err);
-					}
-				});
-			});
-		}
+			}
+		});
 
+		return promise;
 	}
 
 	/**
@@ -229,29 +405,17 @@
 		options = merge({}, defOpts, options);
 
 		var lines = 1;
+		var variables = [];
 		var debug = options.debug;
 		var minify = options.minify;
 		var openTag = options.openTag;
 		var closeTag = options.closeTag;
-		var codes = 'return function(__data__){\n\'use strict\'\n';
+		var globalObj = typeof global !== 'undefined' ? global : self;
+		var codes = "var $$res = '';\n";
 
 		if (debug) {
-			codes += 'try{var $$line=1,';
-		} else {
-			codes += 'var ';
+			codes = "var $$line;\n" + codes + "try{\n$$line = 1;\t";
 		}
-
-		// Parse `typeof`
-		template.replace(TYPEOF_RE, function (_, $1) {
-			data[$1] = data[$1] || undefined;
-		});
-
-		// Extract variables
-		Object.keys(data).forEach(function (key) {
-			codes += key + '=__data__[\'' + key + '\'],';
-		});
-
-		codes += '$$res=\'\'\n';
 
 		// Parse the template
 		template.split(closeTag).forEach(function (segment) {
@@ -265,10 +429,10 @@
 				} else {
 					htmlCode = htmlCode.replace(INDENT_RE, '\\n$1');
 				}
-				codes += htmlCode + '\n';
+				codes += htmlCode + ';\n';
 				if (debug) {
 					lines += html.split(LINE_RE).length - 1;
-					codes += '$$line=' + lines + ';	';
+					codes += "$$line = " + lines + ";\t";
 				}
 			}
 			if (logic) {
@@ -281,20 +445,34 @@
 					logicCode = logic.trim();
 				}
 				codes += logicCode + '\n';
+				logicCode
+					.match(jsTokens$1)
+					.map(function (keyword) {
+						jsTokens$1.lastIndex = 0;
+						return jsTokens_1(jsTokens$1.exec(keyword));
+					}).forEach(function (token) {
+					var type = token.type;
+					var value = token.value;
+					if (type === 'name' && !isKeywordJs(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$') {
+						variables.push(value);
+					}
+				});
 				if (debug) {
 					lines += logic.split(LINE_RE).length - 1;
-					codes += '$$line=' + lines + ';	';
+					codes += "$$line = " + lines + ";\t";
 				}
 			}
 		});
 
-		codes += 'return $$res';
+		codes += 'return $$res;\n';
+
+		codes = parseVariables(variables) + codes;
 
 		if (debug) {
-			codes += '\n}catch(e){\n$$rethrow(e, $$template, $$line)\n}\n}';
-		} else {
-			codes += '\n}';
+			codes += '}catch(e){\n$$rethrow(e, $$template, $$line);\n}\n';
 		}
+
+		codes = "return function($$data){\n'use strict';\n" + codes + "}";
 
 		function include(path, subData, subOptions) {
 			subData = merge({}, data, subData);
@@ -302,45 +480,27 @@
 			return renderFileSync(path, subData, subOptions);
 		}
 
-		return new Function('$$template, $$escape, $$rethrow, include', codes)(template, escapeHTML, rethrow, include);
+		return new Function('$$global', '$$template, $$escape, $$rethrow, include', codes)(globalObj, template, escapeHtml_1, rethrow, include);
 	}
 
 	function parseHTML(codes) {
-		return '$$res+=' + JSON.stringify(codes);
+		return '$$res += ' + JSON.stringify(codes);
 	}
 
 	function parseValue(codes, escape) {
 		if (escape) {
-			codes = '$$escape(' + codes.trim() + ')';
+			return '$$res += $$escape(' + codes.trim() + ')';
+		} else {
+			return '$$res += (' + codes + ')';
 		}
-		return '$$res+=(' + codes + ')';
 	}
 
-	function escapeHTML(value) {
-		var html = '' + value;
-		var match = ESCAPE_RE.exec(html);
-		if (!match) {
-			return value;
-		}
-
-		var result = '';
-		var lastIndex = 0;
-		var i = match.index;
-		var length = html.length;
-		for (; i < length; i++) {
-			var charCode = html.charCodeAt(i);
-			if (charCode === 34 || charCode === 38 || charCode === 39 || charCode === 60 || charCode === 62) {
-				if (lastIndex !== i) {
-					result += html.substring(lastIndex, i);
-				}
-				lastIndex = i + 1;
-				result += '&#' + charCode + ';';
-			}
-		}
-		if (lastIndex !== i) {
-			result += html.substring(lastIndex, i);
-		}
-		return result;
+	function parseVariables(variables) {
+		var codes = '$$data = $$data || {};\n';
+		variables.forEach(function (variable) {
+			codes += "var " + variable + " = $$data['" + variable + "'] === undefined ? $$global['" + variable + "'] : $$data['" + variable + "'];\n";
+		});
+		return codes;
 	}
 
 	function rethrow(err, template, line) {
@@ -360,7 +520,7 @@
 		render: render,
 		renderFile: renderFile,
 		renderFileSync: renderFileSync,
-		escapeHTML: escapeHTML,
+		escapeHTML: escapeHtml_1,
 		version: version
 	};
 

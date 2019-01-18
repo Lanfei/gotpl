@@ -5,14 +5,15 @@
  * @license MIT
  */
 'use strict';
+import jsTokens, {matchToToken} from 'js-tokens';
+import isKeyword from 'is-keyword-js';
+import escapeHTML from 'escape-html';
 
 const version = 'VERSION';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
 const INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
-const ESCAPE_RE = /["'&<>]/;
-const TYPEOF_RE = /typeof ([$\w]+)/g;
 
 // Rendering caches
 const tplCache = {};
@@ -41,11 +42,7 @@ let defOpts = {
  * @param {Object} options The properties to merge in default options
  */
 function config(options) {
-	if (typeof options === 'object') {
-		merge(defOpts, options);
-	} else if (arguments.length === 2) {
-		defOpts[arguments[0]] = arguments[1];
-	}
+	merge(defOpts, options);
 }
 
 /**
@@ -121,10 +118,10 @@ function render(template, data, options) {
 
 /**
  * Render the giving path or template.
- * @param   {string} path       Template file path
- * @param   {string} [template] Template source
- * @param   {Object} [data]     Template data
- * @param   {Object} [options]  Rendering options
+ * @param   {string}      path       Template file path
+ * @param   {string|null} [template] Template source
+ * @param   {Object}      [data]     Template data
+ * @param   {Object}      [options]  Rendering options
  * @returns {string}
  */
 function renderByPath(path, template, data, options) {
@@ -168,34 +165,33 @@ function renderFile(path, data, options, next) {
 		options = null;
 	}
 
-	if (next) {
-		fs.readFile(path, (err, buffer) => {
-			if (err) {
-				next(err);
-				return;
-			}
+	// Return a promise if callback is not provided
+	let promise;
+	if (!next) {
+		promise = new Promise((resolve, reject) => {
+			next = (err, data) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(data);
+				}
+			};
+		});
+	}
+
+	fs.readFile(path, (err, buffer) => {
+		if (err) {
+			next(err);
+		} else {
 			try {
 				next(null, renderByPath(path, buffer.toString(), data, options));
 			} catch (err) {
 				next(err);
 			}
-		});
-	} else {
-		return new Promise((resolve, reject) => {
-			fs.readFile(path, (err, buffer) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				try {
-					resolve(renderByPath(path, buffer.toString(), data, options));
-				} catch (err) {
-					reject(err);
-				}
-			});
-		});
-	}
+		}
+	});
 
+	return promise;
 }
 
 /**
@@ -220,29 +216,17 @@ function compile(template, data, options) {
 	options = merge({}, defOpts, options);
 
 	let lines = 1;
+	let variables = [];
 	let debug = options.debug;
 	let minify = options.minify;
 	let openTag = options.openTag;
 	let closeTag = options.closeTag;
-	let codes = 'return function(__data__){\n\'use strict\'\n';
+	let globalObj = typeof global !== 'undefined' ? global : self;
+	let codes = `var $$res = '';\n`;
 
 	if (debug) {
-		codes += 'try{var $$line=1,';
-	} else {
-		codes += 'var ';
+		codes = `var $$line;\n${codes}try{\n$$line = 1;\t`;
 	}
-
-	// Parse `typeof`
-	template.replace(TYPEOF_RE, (_, $1) => {
-		data[$1] = data[$1] || undefined;
-	});
-
-	// Extract variables
-	Object.keys(data).forEach(key => {
-		codes += key + '=__data__[\'' + key + '\'],';
-	});
-
-	codes += '$$res=\'\'\n';
 
 	// Parse the template
 	template.split(closeTag).forEach(segment => {
@@ -256,10 +240,10 @@ function compile(template, data, options) {
 			} else {
 				htmlCode = htmlCode.replace(INDENT_RE, '\\n$1');
 			}
-			codes += htmlCode + '\n';
+			codes += htmlCode + ';\n';
 			if (debug) {
 				lines += html.split(LINE_RE).length - 1;
-				codes += '$$line=' + lines + ';	';
+				codes += `$$line = ${lines};\t`;
 			}
 		}
 		if (logic) {
@@ -272,20 +256,34 @@ function compile(template, data, options) {
 				logicCode = logic.trim();
 			}
 			codes += logicCode + '\n';
+			logicCode
+				.match(jsTokens)
+				.map(keyword => {
+					jsTokens.lastIndex = 0;
+					return matchToToken(jsTokens.exec(keyword));
+				}).forEach(token => {
+				let type = token.type;
+				let value = token.value;
+				if (type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$') {
+					variables.push(value);
+				}
+			});
 			if (debug) {
 				lines += logic.split(LINE_RE).length - 1;
-				codes += '$$line=' + lines + ';	';
+				codes += `$$line = ${lines};\t`;
 			}
 		}
 	});
 
-	codes += 'return $$res';
+	codes += 'return $$res;\n';
+
+	codes = parseVariables(variables) + codes;
 
 	if (debug) {
-		codes += '\n}catch(e){\n$$rethrow(e, $$template, $$line)\n}\n}';
-	} else {
-		codes += '\n}';
+		codes += '}catch(e){\n$$rethrow(e, $$template, $$line);\n}\n';
 	}
+
+	codes = `return function($$data){\n'use strict';\n${codes}}`;
 
 	function include(path, subData, subOptions) {
 		subData = merge({}, data, subData);
@@ -293,45 +291,27 @@ function compile(template, data, options) {
 		return renderFileSync(path, subData, subOptions);
 	}
 
-	return new Function('$$template, $$escape, $$rethrow, include', codes)(template, escapeHTML, rethrow, include);
+	return new Function('$$global', '$$template, $$escape, $$rethrow, include', codes)(globalObj, template, escapeHTML, rethrow, include);
 }
 
 function parseHTML(codes) {
-	return '$$res+=' + JSON.stringify(codes);
+	return '$$res += ' + JSON.stringify(codes);
 }
 
 function parseValue(codes, escape) {
 	if (escape) {
-		codes = '$$escape(' + codes.trim() + ')';
+		return '$$res += $$escape(' + codes.trim() + ')';
+	} else {
+		return '$$res += (' + codes + ')';
 	}
-	return '$$res+=(' + codes + ')';
 }
 
-function escapeHTML(value) {
-	let html = '' + value;
-	let match = ESCAPE_RE.exec(html);
-	if (!match) {
-		return value;
-	}
-
-	let result = '';
-	let lastIndex = 0;
-	let i = match.index;
-	let length = html.length;
-	for (; i < length; i++) {
-		let charCode = html.charCodeAt(i);
-		if (charCode === 34 || charCode === 38 || charCode === 39 || charCode === 60 || charCode === 62) {
-			if (lastIndex !== i) {
-				result += html.substring(lastIndex, i);
-			}
-			lastIndex = i + 1;
-			result += '&#' + charCode + ';';
-		}
-	}
-	if (lastIndex !== i) {
-		result += html.substring(lastIndex, i);
-	}
-	return result;
+function parseVariables(variables) {
+	let codes = '$$data = $$data || {};\n';
+	variables.forEach(variable => {
+		codes += `var ${variable} = $$data['${variable}'] === undefined ? $$global['${variable}'] : $$data['${variable}'];\n`;
+	});
+	return codes;
 }
 
 function rethrow(err, template, line) {
