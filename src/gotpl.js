@@ -264,7 +264,7 @@ function compile(template, data, options) {
 				}).forEach(token => {
 				let type = token.type;
 				let value = token.value;
-				if (type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$') {
+				if (type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$' && value !== 'include') {
 					variables.push(value);
 				}
 			});
