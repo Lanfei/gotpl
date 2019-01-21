@@ -14,7 +14,7 @@ var escapeHTML = _interopDefault(require('escape-html'));
  * @license MIT
  */
 
-var version = '8.0.0';
+var version = '8.0.2';
 
 // Patterns
 var LINE_RE = /\r?\n/g;
@@ -273,7 +273,7 @@ function compile(template, data, options) {
 				}).forEach(function (token) {
 				var type = token.type;
 				var value = token.value;
-				if (type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$') {
+				if (type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$' && value !== 'include') {
 					variables.push(value);
 				}
 			});
