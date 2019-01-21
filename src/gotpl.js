@@ -77,7 +77,7 @@ function resolvePath(filename, base) {
 		if (base) {
 			base = path.resolve(base);
 		} else {
-			base = defOpts.root;
+			base = path.resolve(defOpts.root);
 		}
 		if (path.extname(base)) {
 			base = path.dirname(base);
@@ -126,10 +126,10 @@ function render(template, data, options) {
  */
 function renderByPath(path, template, data, options) {
 	options = merge({}, defOpts, options);
-	let filename = resolvePath(path, options.filename || options.root);
+	let filename = resolvePath(path, options.parent || options.root);
 	let compiled = fileCache[filename];
 	if (!compiled) {
-		options.filename = filename;
+		options.parent = filename;
 		template = template || require('fs').readFileSync(filename).toString();
 		compiled = compile(template, options);
 		// Cache the compiled function
@@ -167,6 +167,7 @@ function renderFile(path, data, options, next) {
 
 	// Return a promise if callback is not provided
 	let promise;
+	let filename = resolvePath(path, options ? options.root : null);
 	if (!next) {
 		promise = new Promise((resolve, reject) => {
 			next = (err, data) => {
@@ -179,15 +180,15 @@ function renderFile(path, data, options, next) {
 		});
 	}
 
-	fs.readFile(path, (err, buffer) => {
+	fs.readFile(filename, (err, buffer) => {
 		if (err) {
 			next(err);
-		} else {
-			try {
-				next(null, renderByPath(path, buffer.toString(), data, options));
-			} catch (err) {
-				next(err);
-			}
+			return;
+		}
+		try {
+			next(null, renderByPath(filename, buffer.toString(), data, options));
+		} catch (err) {
+			next(err);
 		}
 	});
 
@@ -211,8 +212,6 @@ function renderFileSync(path, data, options) {
  * @return {Function}
  */
 function compile(template, options) {
-	options = merge({}, defOpts, options);
-
 	let lines = 1;
 	let variables = [];
 	let debug = options.debug;

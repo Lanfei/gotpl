@@ -194,7 +194,7 @@
 	 * @license MIT
 	 */
 
-	var version = '8.0.3';
+	var version = '8.1.1';
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;
@@ -266,7 +266,7 @@
 			if (base) {
 				base = path.resolve(base);
 			} else {
-				base = defOpts.root;
+				base = path.resolve(defOpts.root);
 			}
 			if (path.extname(base)) {
 				base = path.dirname(base);
@@ -315,10 +315,10 @@
 	 */
 	function renderByPath(path, template, data, options) {
 		options = merge({}, defOpts, options);
-		var filename = resolvePath(path, options.filename || options.root);
+		var filename = resolvePath(path, options.parent || options.root);
 		var compiled = fileCache[filename];
 		if (!compiled) {
-			options.filename = filename;
+			options.parent = filename;
 			template = template || require('fs').readFileSync(filename).toString();
 			compiled = compile(template, options);
 			// Cache the compiled function
@@ -356,6 +356,7 @@
 
 		// Return a promise if callback is not provided
 		var promise;
+		var filename = resolvePath(path, options ? options.root : null);
 		if (!next) {
 			promise = new Promise(function (resolve, reject) {
 				next = function (err, data) {
@@ -368,15 +369,15 @@
 			});
 		}
 
-		fs.readFile(path, function (err, buffer) {
+		fs.readFile(filename, function (err, buffer) {
 			if (err) {
 				next(err);
-			} else {
-				try {
-					next(null, renderByPath(path, buffer.toString(), data, options));
-				} catch (err) {
-					next(err);
-				}
+				return;
+			}
+			try {
+				next(null, renderByPath(filename, buffer.toString(), data, options));
+			} catch (err) {
+				next(err);
 			}
 		});
 
@@ -400,8 +401,6 @@
 	 * @return {Function}
 	 */
 	function compile(template, options) {
-		options = merge({}, defOpts, options);
-
 		var lines = 1;
 		var variables = [];
 		var debug = options.debug;
