@@ -212,6 +212,8 @@ function renderFileSync(path, data, options) {
  * @return {Function}
  */
 function compile(template, options) {
+	options = merge({}, defOpts, options);
+
 	let lines = 1;
 	let variables = [];
 	let debug = options.debug;

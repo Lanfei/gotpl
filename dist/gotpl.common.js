@@ -14,7 +14,7 @@ var escapeHTML = _interopDefault(require('escape-html'));
  * @license MIT
  */
 
-var version = '8.1.1';
+var version = '8.1.2';
 
 // Patterns
 var LINE_RE = /\r?\n/g;
@@ -221,6 +221,8 @@ function renderFileSync(path, data, options) {
  * @return {Function}
  */
 function compile(template, options) {
+	options = merge({}, defOpts, options);
+
 	var lines = 1;
 	var variables = [];
 	var debug = options.debug;
