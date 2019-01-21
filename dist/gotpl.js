@@ -194,7 +194,7 @@
 	 * @license MIT
 	 */
 
-	var version = '8.0.2';
+	var version = '8.0.3';
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;
@@ -290,7 +290,7 @@
 		var compiled = tplCache[template];
 		if (!compiled) {
 			options = merge({}, defOpts, options);
-			compiled = compile(template, data, options);
+			compiled = compile(template, options);
 			// Cache the compiled function
 			if (options.cache && !options.debug) {
 				tplCache[template] = compiled;
@@ -320,7 +320,7 @@
 		if (!compiled) {
 			options.filename = filename;
 			template = template || require('fs').readFileSync(filename).toString();
-			compiled = compile(template, data, options);
+			compiled = compile(template, options);
 			// Cache the compiled function
 			if (options.cache && !options.debug) {
 				fileCache[filename] = compiled;
@@ -396,12 +396,10 @@
 	/**
 	 * Return the compiled function.
 	 * @param {string} template  Template source
-	 * @param {Object} [data]    Template data
 	 * @param {Object} [options] Rendering options
 	 * @return {Function}
 	 */
-	function compile(template, data, options) {
-		data = merge({}, data);
+	function compile(template, options) {
 		options = merge({}, defOpts, options);
 
 		var lines = 1;
@@ -437,25 +435,16 @@
 			if (logic) {
 				var logicCode;
 				if (logic.indexOf('=') === 0) {
-					logicCode = parseValue(logic.slice(1), true);
+					logic = logic.slice(1);
+					logicCode = parseValue(logic, true);
 				} else if (logic.indexOf('-') === 0) {
-					logicCode = parseValue(logic.slice(1));
+					logic = logic.slice(1);
+					logicCode = parseValue(logic);
 				} else {
 					logicCode = logic.trim();
 				}
 				codes += logicCode + '\n';
-				logicCode
-					.match(jsTokens$1)
-					.map(function (keyword) {
-						jsTokens$1.lastIndex = 0;
-						return jsTokens_1(jsTokens$1.exec(keyword));
-					}).forEach(function (token) {
-					var type = token.type;
-					var value = token.value;
-					if (type === 'name' && !isKeywordJs(value) && variables.indexOf(value) < 0 && value.slice(0, 2) !== '$$' && value !== 'include') {
-						variables.push(value);
-					}
-				});
+				variables = getVariables(logic, variables);
 				if (debug) {
 					lines += logic.split(LINE_RE).length - 1;
 					codes += "$$line = " + lines + ";\t";
@@ -473,13 +462,11 @@
 
 		codes = "return function($$data){\n'use strict';\n" + codes + "}";
 
-		function include(path, subData, subOptions) {
-			subData = merge({}, data, subData);
-			subOptions = merge({}, options, subOptions);
-			return renderFileSync(path, subData, subOptions);
+		function include(path, subData) {
+			return renderFileSync(path, subData, options);
 		}
 
-		return new Function('$$global', '$$template, $$escape, $$rethrow, include', codes)(globalObj, template, escapeHtml_1, rethrow, include);
+		return new Function('$$global', '$$template, $$merge, $$escape, $$include, $$rethrow', codes)(globalObj, template, merge, escapeHtml_1, include, rethrow);
 	}
 
 	function parseHTML(codes) {
@@ -494,10 +481,33 @@
 		}
 	}
 
+	function getVariables(codes, variables) {
+		var ignore = false;
+		codes
+			.match(jsTokens$1)
+			.map(function (keyword) {
+				jsTokens$1.lastIndex = 0;
+				return jsTokens_1(jsTokens$1.exec(keyword));
+			})
+			.forEach(function (token) {
+				var type = token.type;
+				var value = token.value;
+				if (!ignore && type === 'name' && !isKeywordJs(value) && variables.indexOf(value) < 0) {
+					variables.push(value);
+				}
+				ignore = type === 'punctuator' && value === '.';
+			});
+		return variables;
+	}
+
 	function parseVariables(variables) {
 		var codes = '$$data = $$data || {};\n';
 		variables.forEach(function (variable) {
-			codes += "var " + variable + " = $$data['" + variable + "'] === undefined ? $$global['" + variable + "'] : $$data['" + variable + "'];\n";
+			if (variable === 'include') {
+				codes += 'var include = function (path, data) {return $$include(path, $$merge({}, $$data, data));};\n';
+			} else {
+				codes += "var " + variable + " = $$data['" + variable + "'] === undefined ? $$global['" + variable + "'] : $$data['" + variable + "'];\n";
+			}
 		});
 		return codes;
 	}
