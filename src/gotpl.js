@@ -13,7 +13,7 @@ const version = 'VERSION';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
-const INDENT_RE = /[\r\n]+([\f\t\v]*)/g;
+const INDENT_RE = /[\r\n]+([\s]+)/g;
 
 // Rendering caches
 const tplCache = {};
@@ -234,12 +234,11 @@ function compile(template, data, options) {
 		let html = split[0];
 		let logic = split[1];
 		if (html) {
-			let htmlCode = parseHTML(html);
+			let htmlCode;
 			if (minify) {
-				htmlCode = htmlCode.replace(INDENT_RE, '\\n');
-			} else {
-				htmlCode = htmlCode.replace(INDENT_RE, '\\n$1');
+				htmlCode = html.replace(INDENT_RE, '\n');
 			}
+			htmlCode = parseHTML(htmlCode);
 			codes += htmlCode + ';\n';
 			if (debug) {
 				lines += html.split(LINE_RE).length - 1;
