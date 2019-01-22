@@ -1,7 +1,8 @@
-const expect = require('expect.js');
-const gotpl = require('../dist/gotpl.common');
+const isBrowser = typeof window !== 'undefined';
+const expect = isBrowser ? window.expect : require('expect.js');
+const gotpl = isBrowser ? window.gotpl : require('../dist/gotpl.common');
 
-describe('.config(options)', () => {
+describe('gotpl.config(options)', () => {
 	it('should update the default options', () => {
 		expect(gotpl.config().debug).to.be(false);
 		gotpl.config({debug: true});
@@ -10,7 +11,7 @@ describe('.config(options)', () => {
 	});
 });
 
-describe('.compile(template, options)', () => {
+describe('gotpl.compile(template, options)', () => {
 	it('should compile to a function', () => {
 		let fn = gotpl.compile('<%= name %>');
 		expect(fn).to.be.a('function');
@@ -60,95 +61,107 @@ describe('gotpl.render(str, data, options)', () => {
 });
 
 describe('gotpl.renderFile(path, data, options, callback)', () => {
-	it('should render a file', done => {
-		gotpl.renderFile('test/fixtures/normal.tpl', (err, result) => {
-			expect(result).to.be.equal('<p>gotpl</p>');
-			done();
+	if (isBrowser) {
+		it('should be undefined in browser', () => {
+			expect(gotpl.renderFile).to.be(undefined);
 		});
-	});
+	} else {
+		it('should render a file', done => {
+			gotpl.renderFile('test/fixtures/normal.tpl', (err, result) => {
+				expect(result).to.be.equal('<p>gotpl</p>');
+				done();
+			});
+		});
 
-	it('should accept variables', done => {
-		gotpl.renderFile('test/fixtures/variable.tpl', {name: 'gotpl'}, (err, result) => {
-			expect(result).to.be.equal('gotpl');
-			done();
+		it('should accept variables', done => {
+			gotpl.renderFile('test/fixtures/variable.tpl', {name: 'gotpl'}, (err, result) => {
+				expect(result).to.be.equal('gotpl');
+				done();
+			});
 		});
-	});
 
-	it('should render a file without extension', done => {
-		gotpl.renderFile('test/fixtures/normal', (err, result) => {
-			expect(result).to.be.equal('<p>gotpl</p>');
-			done();
+		it('should render a file without extension', done => {
+			gotpl.renderFile('test/fixtures/normal', (err, result) => {
+				expect(result).to.be.equal('<p>gotpl</p>');
+				done();
+			});
 		});
-	});
 
-	it('should render a file according to `root` option', done => {
-		gotpl.renderFile('normal.tpl', null, {root: 'test/fixtures'}, (err, result) => {
-			expect(result).to.be.equal('<p>gotpl</p>');
-			done();
+		it('should render a file according to `root` option', done => {
+			gotpl.renderFile('normal.tpl', null, {root: 'test/fixtures'}, (err, result) => {
+				expect(result).to.be.equal('<p>gotpl</p>');
+				done();
+			});
 		});
-	});
 
-	it('should return by callback if there is any error', done => {
-		gotpl.renderFile('test/fixtures/error.tpl', err => {
-			expect(err).to.be.an(Error);
-			done();
+		it('should return by callback if there is any error', done => {
+			gotpl.renderFile('test/fixtures/error.tpl', err => {
+				expect(err).to.be.an(Error);
+				done();
+			});
 		});
-	});
 
-	it('should have the line number from the error if `debug` option is true', done => {
-		gotpl.renderFile('test/fixtures/error.tpl', null, {debug: true}, err => {
-			expect(err.line).to.be.an('number');
-			done();
+		it('should have the line number from the error if `debug` option is true', done => {
+			gotpl.renderFile('test/fixtures/error.tpl', null, {debug: true}, err => {
+				expect(err.line).to.be.an('number');
+				done();
+			});
 		});
-	});
 
-	it('should return a promise if `callback` option is not provided', done => {
-		let promise = gotpl.renderFile('test/fixtures/normal.tpl');
-		expect(promise).to.be.a(Promise);
-		promise.then(result => {
-			expect(result).to.be.equal('<p>gotpl</p>');
-			done();
+		it('should return a promise if `callback` option is not provided', done => {
+			let promise = gotpl.renderFile('test/fixtures/normal.tpl');
+			expect(promise).to.be.a(Promise);
+			promise.then(result => {
+				expect(result).to.be.equal('<p>gotpl</p>');
+				done();
+			});
 		});
-	});
 
-	it('should reject the promise if there is any error', done => {
-		let promise = gotpl.renderFile('test/fixtures/error.tpl');
-		expect(promise).to.be.a(Promise);
-		promise.catch(err => {
-			expect(err).to.be.an(Error);
-			done();
+		it('should reject the promise if there is any error', done => {
+			let promise = gotpl.renderFile('test/fixtures/error.tpl');
+			expect(promise).to.be.a(Promise);
+			promise.catch(err => {
+				expect(err).to.be.an(Error);
+				done();
+			});
 		});
-	});
+	}
 });
 
 describe('gotpl.renderFileSync(path, data, options)', () => {
-	it('should render a file', () => {
-		let result = gotpl.renderFileSync('test/fixtures/normal.tpl');
-		expect(result).to.be.equal('<p>gotpl</p>');
-	});
+	if (isBrowser) {
+		it('should be undefined in browser', () => {
+			expect(gotpl.renderFileSync).to.be(undefined);
+		});
+	} else {
+		it('should render a file', () => {
+			let result = gotpl.renderFileSync('test/fixtures/normal.tpl');
+			expect(result).to.be.equal('<p>gotpl</p>');
+		});
 
-	it('should accept variables', () => {
-		let result = gotpl.renderFileSync('test/fixtures/variable.tpl', {name: 'gotpl'});
-		expect(result).to.be.equal('gotpl');
-	});
+		it('should accept variables', () => {
+			let result = gotpl.renderFileSync('test/fixtures/variable.tpl', {name: 'gotpl'});
+			expect(result).to.be.equal('gotpl');
+		});
 
-	it('should render a file without extension', () => {
-		let result = gotpl.renderFileSync('test/fixtures/normal');
-		expect(result).to.be.equal('<p>gotpl</p>');
-	});
+		it('should render a file without extension', () => {
+			let result = gotpl.renderFileSync('test/fixtures/normal');
+			expect(result).to.be.equal('<p>gotpl</p>');
+		});
 
-	it('should render a file according to `root` option', () => {
-		let result = gotpl.renderFileSync('normal.tpl', null, {root: 'test/fixtures'})
-		expect(result).to.be.equal('<p>gotpl</p>');
-	});
+		it('should render a file according to `root` option', () => {
+			let result = gotpl.renderFileSync('normal.tpl', null, {root: 'test/fixtures'})
+			expect(result).to.be.equal('<p>gotpl</p>');
+		});
 
-	it('should throw if there is any error', () => {
-		try {
-			gotpl.renderFileSync('test/fixtures/error.tpl');
-		} catch (err) {
-			expect(err).to.be.an(Error);
-		}
-	});
+		it('should throw if there is any error', () => {
+			try {
+				gotpl.renderFileSync('test/fixtures/error.tpl');
+			} catch (err) {
+				expect(err).to.be.an(Error);
+			}
+		});
+	}
 });
 
 describe('<%=', () => {
@@ -166,18 +179,26 @@ describe('<%-', () => {
 });
 
 describe('includes', () => {
+	function renderTemplate(template, data) {
+		if (isBrowser) {
+			return gotpl.render(document.getElementById(template).innerHTML.trim(), data);
+		} else {
+			return gotpl.renderFileSync(template, data, {root: 'test/fixtures'});
+		}
+	}
+
 	it('should include partial templates', () => {
-		let result = gotpl.renderFileSync('test/fixtures/include');
+		let result = renderTemplate('include');
 		expect(result).to.be.equal('<p>Hello</p><p>gotpl</p>');
 	});
 
 	it('should include nested templates', () => {
-		let result = gotpl.renderFileSync('test/fixtures/nest');
+		let result = renderTemplate('nest');
 		expect(result).to.be.equal('<p>Hello</p><p>gotpl</p>');
 	});
 
 	it('should pass variables to included templates', () => {
-		let result = gotpl.renderFileSync('test/fixtures/nest', {hello: 'Hi'});
+		let result = renderTemplate('nest', {hello: 'Hi'});
 		expect(result).to.be.equal('<p>Hi</p><p>gotpl</p>');
 	});
 });

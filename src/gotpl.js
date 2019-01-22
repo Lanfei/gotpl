@@ -267,7 +267,7 @@ function compile(template, options) {
 	codes = `return function($$data){\n'use strict';\n${codes}}`;
 
 	function include(path, data) {
-		return isBrowser ? render(document.getElementById(path).innerHTML, data, options) : renderFileSync(path, data, options);
+		return isBrowser ? render(document.getElementById(path).innerHTML.trim(), data, options) : renderFileSync(path, data, options);
 	}
 
 	return new Function('$$scope', '$$template, $$merge, $$escape, $$include, $$rethrow', codes)(scope, template, merge, escapeHTML, include, rethrow);

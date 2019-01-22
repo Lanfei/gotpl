@@ -338,7 +338,7 @@
 		codes = "return function($$data){\n'use strict';\n" + codes + "}";
 
 		function include(path, data) {
-			return render(document.getElementById(path).innerHTML, data, options);
+			return render(document.getElementById(path).innerHTML.trim(), data, options);
 		}
 
 		return new Function('$$scope', '$$template, $$merge, $$escape, $$include, $$rethrow', codes)(scope, template, merge, escapeHtml_1, include, rethrow);
