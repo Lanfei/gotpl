@@ -8,6 +8,14 @@ A lightweight, high-performance JavaScript template engine.
 $ npm install gotpl --save
 ```
 
+## Test
+
+```bash
+$ npm run test
+```
+
+You can also check the [test report in browser](http://lanfei.github.io/gotpl/test/index.html).
+
 ## Examples
 
 ```ejs

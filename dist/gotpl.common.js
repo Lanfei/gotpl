@@ -14,7 +14,7 @@ var escapeHTML = _interopDefault(require('escape-html'));
  * @license MIT
  */
 
-var version = '8.2.3';
+var version = '8.3.0';
 
 // Patterns
 var LINE_RE = /\r?\n/g;
