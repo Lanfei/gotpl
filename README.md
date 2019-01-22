@@ -1,4 +1,4 @@
-# gotpl [![NPM version][npm-image]][npm-url]
+# gotpl [![Build Status][build-image]][build-url] [![Coverage Status][coverage-image]][coverage-url] [![Version][version-image]][version-url] [![License][license-image]][license-url]
 
 A lightweight, high-performance JavaScript template engine.
 
@@ -109,5 +109,11 @@ Use `include(path[, data, options])` function to import partial templates, and u
 <% } %>
 ```
 
-[npm-url]: https://npmjs.org/package/gotpl
-[npm-image]: https://badge.fury.io/js/gotpl.svg
+[build-url]: https://circleci.com/gh/Lanfei/gotpl
+[build-image]: https://img.shields.io/circleci/project/github/Lanfei/gotpl.svg
+[coverage-url]: https://codecov.io/github/Lanfei/gotpl
+[coverage-image]: https://img.shields.io/codecov/c/github/Lanfei/gotpl.svg
+[version-url]: https://npmjs.org/package/gotpl
+[version-image]: https://img.shields.io/npm/v/gotpl.svg
+[license-url]: https://github.com/Lanfei/gotpl/blob/master/LICENSE
+[license-image]: https://img.shields.io/npm/l/gotpl.svg

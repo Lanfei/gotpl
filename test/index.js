@@ -54,9 +54,14 @@ describe('gotpl.render(str, data, options)', () => {
 		expect(result).to.be.equal('gotpl');
 	});
 
-	it('should render according to options', () => {
-		let result = gotpl.render('\t<p>gotpl</p>', null, {minify: true});
+	it('should minify indents', () => {
+		let result = gotpl.render('\t<p>gotpl</p>');
 		expect(result).to.be.equal('<p>gotpl</p>');
+	});
+
+	it('should render according to options', () => {
+		let result = gotpl.render('\t<p>gotpl</p>', null, {minify: false});
+		expect(result).to.be.equal('\t<p>gotpl</p>');
 	});
 });
 
@@ -95,7 +100,7 @@ describe('gotpl.renderFile(path, data, options, callback)', () => {
 		});
 
 		it('should return by callback if there is any error', done => {
-			gotpl.renderFile('test/fixtures/error.tpl', err => {
+			gotpl.renderFile('test/fixtures/not-exists.tpl', err => {
 				expect(err).to.be.an(Error);
 				done();
 			});

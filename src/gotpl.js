@@ -58,7 +58,6 @@ function config(options) {
  * @return {Object}            The merged object
  */
 function merge(target, /*...*/objects) {
-	target = target || {};
 	for (let i = 1, l = arguments.length; i < l; ++i) {
 		let object = arguments[i];
 		if (!object) {
@@ -228,6 +227,8 @@ function compile(template, options) {
 			let htmlCode;
 			if (minify) {
 				htmlCode = html.replace(INDENT_RE, '');
+			} else {
+				htmlCode = html;
 			}
 			htmlCode = parseHTML(htmlCode);
 			codes += htmlCode + ';\n';
