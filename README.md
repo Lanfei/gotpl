@@ -1,4 +1,4 @@
-# GoTpl [![NPM version][npm-image]][npm-url]
+# gotpl [![NPM version][npm-image]][npm-url]
 
 A lightweight, high-performance JavaScript template engine.
 
@@ -56,15 +56,19 @@ document.getElementById('list').innerHTML = gotpl.render(tpl, data);
 ```js
 gotpl.config(options);
 
-gotpl.render(str, data, options);
+gotpl.render(template, data, options);
 
 gotpl.renderFileSync(path, data, options);
 
-gotpl.renderFile(path, data, options, function(err, html){
-	// Some codes.
+gotpl.renderFile(path, data, options, (err, html) => {
+	// Your codes.
 });
 
 await gotpl.renderFile(path, data, options);
+
+// Cache the compiled function
+let fn = gotpl.compile(template, options);
+fn(data);
 ```
 
 ### Express
