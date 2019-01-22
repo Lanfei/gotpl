@@ -14,9 +14,11 @@ $ npm install gotpl --save
 $ npm run test
 ```
 
-You can also check the [test report in browser](http://lanfei.github.io/gotpl/test/index.html).
+You can also check the [test report in your browser](http://lanfei.github.io/gotpl/test/index.html).
 
 ## Examples
+
+[Online Example](http://lanfei.github.io/gotpl/example/index.html)
 
 ```ejs
 <h1>Projects</h1>
