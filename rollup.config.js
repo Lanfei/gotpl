@@ -4,20 +4,16 @@ import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
 import pkg from './package.json';
 
-const bublePlugin = buble();
-const resolvePlugin = resolve();
-const commonjsPlugin = commonjs();
-const replacePlugin = replace({VERSION: pkg.version});
-
 module.exports = [{
 	input: 'src/gotpl.js',
 	output: {
 		file: 'dist/gotpl.common.js',
 		format: 'cjs'
 	},
+	external: Object.keys(pkg.dependencies),
 	plugins: [
-		bublePlugin,
-		replacePlugin
+		buble(),
+		replace({delimiters: ['<%=', '%>'], VERSION: pkg.version})
 	]
 }, {
 	input: 'src/gotpl.js',
@@ -27,9 +23,9 @@ module.exports = [{
 		format: 'umd'
 	},
 	plugins: [
-		bublePlugin,
-		resolvePlugin,
-		replacePlugin,
-		commonjsPlugin
+		buble(),
+		resolve(),
+		commonjs(),
+		replace({delimiters: ['<%=', '%>'], VERSION: pkg.version, BUILD_ENV: 'browser'})
 	]
 }];

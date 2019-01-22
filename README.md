@@ -5,7 +5,7 @@ A lightweight, high-performance JavaScript template engine.
 ## Installation
 
 ```bash
-$ npm install gotpl
+$ npm install gotpl --save
 ```
 
 ## Examples
@@ -31,20 +31,20 @@ $ npm install gotpl
 ```js
 var data = {
 	projects: [{
-		name: 'GoJS',
-		url: 'https://github.com/Lanfei/GoJS'
+		"name": "gotpl",
+		"url": "https://github.com/Lanfei/gotpl"
 	}, {
-		name: 'Go2d',
-		url: 'https://github.com/Lanfei/Go2d'
+		"name": "playable.js",
+		"url": "https://github.com/Lanfei/playable.js"
 	}, {
-		name: 'GoApp',
-		url: 'https://github.com/Lanfei/GoApp'
+		"name": "webpack-isomorphic",
+		"url": "https://github.com/Lanfei/webpack-isomorphic"
 	}, {
-		name: 'GoTpl',
-		url: 'https://github.com/Lanfei/GoTpl'
+		"name": "websocket-lib",
+		"url": "https://github.com/Lanfei/websocket-lib"
 	}, {
-		name: 'GoNode',
-		url: 'https://github.com/Lanfei/GoNode'
+		"name": "node-cd-cluster",
+		"url": "https://github.com/Lanfei/node-cd-cluster"
 	}]
 };
 var tpl = document.getElementById('tpl').innerHTML;
@@ -54,6 +54,8 @@ document.getElementById('list').innerHTML = gotpl.render(tpl, data);
 ### Node
 
 ```js
+gotpl.config(options);
+
 gotpl.render(str, data, options);
 
 gotpl.renderFileSync(path, data, options);
@@ -75,11 +77,12 @@ app.set('view engine', 'tpl');
 ## Options
 
 - `root` The root of template files
+- `scope` Rendering context, defaults to `global` in node, `window` in browser
 - `debug` Enable debug information output, defaults to `false`
 - `cache` Enable caching, defaults to `true`
 - `minify` Minify indents, defaults to `true`
-- `openTag` Open tag, defaults to "<%"
-- `closeTag` Close tag, defaults to "%>"
+- `openTag` Open tag, defaults to `<%`
+- `closeTag` Close tag, defaults to `%>`
 
 ## Tags
 

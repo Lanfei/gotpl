@@ -9,15 +9,15 @@ import jsTokens, {matchToToken} from 'js-tokens';
 import isKeyword from 'is-keyword-js';
 import escapeHTML from 'escape-html';
 
-const version = 'VERSION';
+const version = '<%=VERSION%>';
+const isBrowser = '<%=BUILD_ENV%>' === 'browser';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
-const INDENT_RE = /[\r\n]+([\s]+)/g;
+const INDENT_RE = /(^|\r|\n)+\s+/g;
 
 // Rendering caches
-const tplCache = {};
-const fileCache = {};
+const cache = {};
 
 /**
  * Default Options
@@ -25,31 +25,37 @@ const fileCache = {};
 let defOpts = {
 	/** The root of template files */
 	root: '',
+	/** Rendering context, defaults to `global` in node, `window` in browser */
+	scope: isBrowser ? window : global,
 	/** Enable debug information output, defaults to `false` */
 	debug: false,
 	/** Enable caching, defaults to `true` */
 	cache: true,
 	/** Minify indents, defaults to `true` */
 	minify: true,
-	/** Open tag, defaults to "<%" */
+	/** Open tag, defaults to `<%` */
 	openTag: '<%',
-	/** Close tag, defaults to "%>" */
+	/** Close tag, defaults to `%>` */
 	closeTag: '%>'
 };
 
 /**
- * The configure function.
- * @param {Object} options The properties to merge in default options
+ * Update the default options.
+ * @param  {Object} [options] The properties to merge in default options
+ * @return {Object}           Latest default options
  */
 function config(options) {
-	merge(defOpts, options);
+	if (options) {
+		merge(defOpts, options);
+	}
+	return defOpts;
 }
 
 /**
- * Merge giving objects into first object.
- * @param  {Object}    target  The object to merge in
- * @param  {...Object} objects Additional objects to merge in
- * @return {Object}
+ * Merge giving objects into the first object.
+ * @param  {Object}    target  The object to merge
+ * @param  {...Object} objects Additional objects to merge
+ * @return {Object}            The merged object
  */
 function merge(target, /*...*/objects) {
 	target = target || {};
@@ -98,22 +104,8 @@ function resolvePath(filename, base) {
  * @returns {string}
  */
 function render(template, data, options) {
-	let compiled = tplCache[template];
-	if (!compiled) {
-		options = merge({}, defOpts, options);
-		compiled = compile(template, options);
-		// Cache the compiled function
-		if (options.cache && !options.debug) {
-			tplCache[template] = compiled;
-		}
-	}
-	try {
-		return compiled(data);
-	} catch (e) {
-		// Remove the cache if an error is caught
-		tplCache[template] = null;
-		throw e;
-	}
+	options = merge({}, defOpts, options);
+	return compile(template, options)(data);
 }
 
 /**
@@ -127,50 +119,50 @@ function render(template, data, options) {
 function renderByPath(path, template, data, options) {
 	options = merge({}, defOpts, options);
 	let filename = resolvePath(path, options.parent || options.root);
-	let compiled = fileCache[filename];
+	let compiled = cache[filename];
 	if (!compiled) {
 		options.parent = filename;
 		template = template || require('fs').readFileSync(filename).toString();
 		compiled = compile(template, options);
 		// Cache the compiled function
 		if (options.cache && !options.debug) {
-			fileCache[filename] = compiled;
+			cache[filename] = compiled;
 		}
 	}
 	try {
 		return compiled(data);
 	} catch (e) {
 		// Remove the cache if an error is caught
-		fileCache[filename] = null;
+		cache[filename] = null;
 		throw e;
 	}
 }
 
 /**
  * Render the file asynchronously.
- * @param  {string}          path      Template file path
- * @param  {Object|Function} [data]    Template data
- * @param  {Object|Function} [options] Rendering options
- * @param  {Function}        [next]    Callback
- * @return {Promise|void}              Return a promise if callback is not provided
+ * @param  {string}          path        Template file path
+ * @param  {Object|Function} [data]      Template data
+ * @param  {Object|Function} [options]   Rendering options
+ * @param  {Function}        [callback]  Callback
+ * @return {Promise|void}                Return a promise if callback is not provided
  */
-function renderFile(path, data, options, next) {
+function renderFile(path, data, options, callback) {
 	const fs = require('fs');
 
 	if (typeof data === 'function') {
-		next = data;
+		callback = data;
 		data = options = null;
 	} else if (typeof options === 'function') {
-		next = options;
+		callback = options;
 		options = null;
 	}
 
 	// Return a promise if callback is not provided
 	let promise;
 	let filename = resolvePath(path, options ? options.root : null);
-	if (!next) {
+	if (!callback) {
 		promise = new Promise((resolve, reject) => {
-			next = (err, data) => {
+			callback = (err, data) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -182,13 +174,13 @@ function renderFile(path, data, options, next) {
 
 	fs.readFile(filename, (err, buffer) => {
 		if (err) {
-			next(err);
+			callback(err);
 			return;
 		}
 		try {
-			next(null, renderByPath(filename, buffer.toString(), data, options));
+			callback(null, renderByPath(filename, buffer.toString(), data, options));
 		} catch (err) {
-			next(err);
+			callback(err);
 		}
 	});
 
@@ -216,11 +208,11 @@ function compile(template, options) {
 
 	let lines = 1;
 	let variables = [];
+	let scope = options.scope;
 	let debug = options.debug;
 	let minify = options.minify;
 	let openTag = options.openTag;
 	let closeTag = options.closeTag;
-	let globalObj = typeof global !== 'undefined' ? global : self;
 	let codes = `var $$res = '';\n`;
 
 	if (debug) {
@@ -235,7 +227,7 @@ function compile(template, options) {
 		if (html) {
 			let htmlCode;
 			if (minify) {
-				htmlCode = html.replace(INDENT_RE, '\n');
+				htmlCode = html.replace(INDENT_RE, '');
 			}
 			htmlCode = parseHTML(htmlCode);
 			codes += htmlCode + ';\n';
@@ -274,11 +266,11 @@ function compile(template, options) {
 
 	codes = `return function($$data){\n'use strict';\n${codes}}`;
 
-	function include(path, subData) {
-		return renderFileSync(path, subData, options);
+	function include(path, data) {
+		return isBrowser ? render(document.getElementById(path).innerHTML, data, options) : renderFileSync(path, data, options);
 	}
 
-	return new Function('$$global', '$$template, $$merge, $$escape, $$include, $$rethrow', codes)(globalObj, template, merge, escapeHTML, include, rethrow);
+	return new Function('$$scope', '$$template, $$merge, $$escape, $$include, $$rethrow', codes)(scope, template, merge, escapeHTML, include, rethrow);
 }
 
 function parseHTML(codes) {
@@ -313,12 +305,12 @@ function getVariables(codes, variables) {
 }
 
 function parseVariables(variables) {
-	let codes = '$$data = $$data || {};\n';
+	let codes = '$$data = $$data || {};\n$$data.__proto__ = $$scope;\n';
 	variables.forEach(variable => {
 		if (variable === 'include') {
 			codes += 'var include = function (path, data) {return $$include(path, $$merge({}, $$data, data));};\n';
 		} else {
-			codes += `var ${variable} = $$data['${variable}'] === undefined ? $$global['${variable}'] : $$data['${variable}'];\n`;
+			codes += `var ${variable} = $$data['${variable}'];\n`;
 		}
 	});
 	return codes;
@@ -328,6 +320,7 @@ function rethrow(err, template, line) {
 	let lines = template.split(LINE_RE);
 	let start = Math.max(line - 3, 0);
 	let end = Math.min(lines.length, line + 3);
+	err.line = line;
 	err.message += '\n\n' + lines.slice(start, end).map((codes, i) => {
 		let curLine = start + i + 1;
 		return (curLine === line ? ' >> ' : '    ') + curLine + '| ' + codes;
@@ -335,7 +328,13 @@ function rethrow(err, template, line) {
 	throw err;
 }
 
-export default {
+export default isBrowser ? {
+	config,
+	compile,
+	render,
+	escapeHTML,
+	version
+} : {
 	config,
 	compile,
 	render,
