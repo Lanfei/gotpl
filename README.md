@@ -20,6 +20,8 @@ Simply [download](https://github.com/Lanfei/gotpl/releases) and include with a s
 <script src="https://cdn.jsdelivr.net/npm/gotpl/dist/gotpl.min.js"></script>
 ```
 
+You can browse the source of the NPM package at [cdn.jsdelivr.net/npm/gotpl](https://cdn.jsdelivr.net/npm/gotpl/).
+
 ## Test
 
 ```bash
