@@ -1,11 +1,23 @@
-# gotpl [![Build Status][build-image]][build-url] [![Coverage Status][coverage-image]][coverage-url] [![Version][version-image]][version-url] [![License][license-image]][license-url]
+# gotpl · [![Build Status][build-image]][build-url] [![Coverage Status][coverage-image]][coverage-url] [![Version][version-image]][version-url] [![License][license-image]][license-url]
 
 A lightweight, high-performance JavaScript template engine.
 
 ## Installation
 
+### Webpack/Browserify
+
 ```bash
 $ npm install gotpl --save
+```
+
+### Direct `<script>` Include
+
+Simply [download](https://github.com/Lanfei/gotpl/releases) and include with a script tag. `playable` will be registered as a global variable.
+
+### CDN
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/gotpl/dist/gotpl.min.js"></script>
 ```
 
 ## Test
