@@ -1,11 +1,6 @@
-'use strict';
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var jsTokens = require('js-tokens');
-var jsTokens__default = _interopDefault(jsTokens);
-var isKeyword = _interopDefault(require('is-keyword-js'));
-var escapeHTML = _interopDefault(require('escape-html'));
+import jsTokens, { matchToToken } from 'js-tokens';
+import isKeyword from 'is-keyword-js';
+import escapeHTML from 'escape-html';
 
 /*!
  * gotpl
@@ -14,19 +9,19 @@ var escapeHTML = _interopDefault(require('escape-html'));
  * @license MIT
  */
 
-var version = '8.4.0';
+const version = '8.4.0';
 
 // Patterns
-var LINE_RE = /\r?\n/g;
-var INDENT_RE = /(^|\r|\n)+\s+/g;
+const LINE_RE = /\r?\n/g;
+const INDENT_RE = /(^|\r|\n)+\s+/g;
 
 // Rendering caches
-var cache = {};
+const cache = {};
 
 /**
  * Default Options
  */
-var defOpts = {
+let defOpts = {
 	/** The root of template files */
 	root: '',
 	/** Rendering context, defaults to `global` in node, `window` in browser */
@@ -62,19 +57,15 @@ function config(options) {
  * @return {Object}            The merged object
  */
 function merge(target, /*...*/objects) {
-	var arguments$1 = arguments;
-
-	var loop = function ( i, l ) {
-		var object = arguments$1[i];
+	for (let i = 1, l = arguments.length; i < l; ++i) {
+		let object = arguments[i];
 		if (!object) {
-			return;
+			continue;
 		}
 		Object.keys(object).forEach(function (key) {
 			target[key] = object[key];
 		});
-	};
-
-	for (var i = 1, l = arguments.length; i < l; ++i) loop( i, l );
+	}
 	return target;
 }
 
@@ -85,7 +76,7 @@ function merge(target, /*...*/objects) {
  * @return {string}          Absolute path of the template file
  */
 function resolvePath(filename, base) {
-	var path = require('path');
+	const path = require('path');
 	if (!path.isAbsolute(filename)) {
 		if (base) {
 			base = path.resolve(base);
@@ -125,8 +116,8 @@ function render(template, data, options) {
  */
 function renderByPath(path, template, data, options) {
 	options = merge({}, defOpts, options);
-	var filename = resolvePath(path, options.parent || options.root);
-	var compiled = cache[filename];
+	let filename = resolvePath(path, options.parent || options.root);
+	let compiled = cache[filename];
 	if (!compiled) {
 		options.parent = filename;
 		template = template || require('fs').readFileSync(filename).toString();
@@ -154,7 +145,7 @@ function renderByPath(path, template, data, options) {
  * @return {Promise|void}                Return a promise if callback is not provided
  */
 function renderFile(path, data, options, callback) {
-	var fs = require('fs');
+	const fs = require('fs');
 
 	if (typeof data === 'function') {
 		callback = data;
@@ -165,11 +156,11 @@ function renderFile(path, data, options, callback) {
 	}
 
 	// Return a promise if callback is not provided
-	var promise;
-	var filename = resolvePath(path, options ? options.root : null);
+	let promise;
+	let filename = resolvePath(path, options ? options.root : null);
 	if (!callback) {
-		promise = new Promise(function (resolve, reject) {
-			callback = function (err, data) {
+		promise = new Promise((resolve, reject) => {
+			callback = (err, data) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -179,7 +170,7 @@ function renderFile(path, data, options, callback) {
 		});
 	}
 
-	fs.readFile(filename, function (err, buffer) {
+	fs.readFile(filename, (err, buffer) => {
 		if (err) {
 			callback(err);
 			return;
@@ -213,26 +204,26 @@ function renderFileSync(path, data, options) {
 function compile(template, options) {
 	options = merge({}, defOpts, options);
 
-	var lines = 1;
-	var variables = [];
-	var scope = options.scope;
-	var debug = options.debug;
-	var minify = options.minify;
-	var openTag = options.openTag;
-	var closeTag = options.closeTag;
-	var codes = "var $$res = '';\n";
+	let lines = 1;
+	let variables = [];
+	let scope = options.scope;
+	let debug = options.debug;
+	let minify = options.minify;
+	let openTag = options.openTag;
+	let closeTag = options.closeTag;
+	let codes = `var $$res = '';\n`;
 
 	if (debug) {
-		codes = "var $$line;\n" + codes + "try{\n$$line = 1;\t";
+		codes = `var $$line;\n${codes}try{\n$$line = 1;\t`;
 	}
 
 	// Parse the template
-	template.split(closeTag).forEach(function (segment) {
-		var split = segment.split(openTag);
-		var html = split[0];
-		var logic = split[1];
+	template.split(closeTag).forEach(segment => {
+		let split = segment.split(openTag);
+		let html = split[0];
+		let logic = split[1];
 		if (html) {
-			var htmlCode;
+			let htmlCode;
 			if (minify) {
 				htmlCode = html.replace(INDENT_RE, '');
 			} else {
@@ -242,11 +233,11 @@ function compile(template, options) {
 			codes += htmlCode + ';\n';
 			if (debug) {
 				lines += html.split(LINE_RE).length - 1;
-				codes += "$$line = " + lines + ";\t";
+				codes += `$$line = ${lines};\t`;
 			}
 		}
 		if (logic) {
-			var logicCode;
+			let logicCode;
 			if (logic.indexOf('=') === 0) {
 				logic = logic.slice(1);
 				logicCode = parseValue(logic, true);
@@ -260,7 +251,7 @@ function compile(template, options) {
 			variables = getVariables(logic, variables);
 			if (debug) {
 				lines += logic.split(LINE_RE).length - 1;
-				codes += "$$line = " + lines + ";\t";
+				codes += `$$line = ${lines};\t`;
 			}
 		}
 	});
@@ -273,7 +264,7 @@ function compile(template, options) {
 		codes += '}catch(e){\n$$rethrow(e, $$template, $$line);\n}\n';
 	}
 
-	codes = "return function($$data){\n'use strict';\n" + codes + "}";
+	codes = `return function($$data){\n'use strict';\n${codes}}`;
 
 	function include(path, data) {
 		return renderFileSync(path, data, options);
@@ -295,16 +286,16 @@ function parseValue(codes, escape) {
 }
 
 function getVariables(codes, variables) {
-	var ignore = false;
+	let ignore = false;
 	codes
-		.match(jsTokens__default)
-		.map(function (keyword) {
-			jsTokens__default.lastIndex = 0;
-			return jsTokens.matchToToken(jsTokens__default.exec(keyword));
+		.match(jsTokens)
+		.map(keyword => {
+			jsTokens.lastIndex = 0;
+			return matchToToken(jsTokens.exec(keyword));
 		})
-		.forEach(function (token) {
-			var type = token.type;
-			var value = token.value;
+		.forEach(token => {
+			let type = token.type;
+			let value = token.value;
 			if (!ignore && type === 'name' && !isKeyword(value) && variables.indexOf(value) < 0) {
 				variables.push(value);
 			}
@@ -314,37 +305,37 @@ function getVariables(codes, variables) {
 }
 
 function parseVariables(variables) {
-	var codes = '$$data = $$data || {};\n$$data.__proto__ = $$scope;\n';
-	variables.forEach(function (variable) {
+	let codes = '$$data = $$data || {};\n$$data.__proto__ = $$scope;\n';
+	variables.forEach(variable => {
 		if (variable === 'include') {
 			codes += 'var include = function (path, data) {return $$include(path, $$merge({}, $$data, data));};\n';
 		} else {
-			codes += "var " + variable + " = $$data['" + variable + "'];\n";
+			codes += `var ${variable} = $$data['${variable}'];\n`;
 		}
 	});
 	return codes;
 }
 
 function rethrow(err, template, line) {
-	var lines = template.split(LINE_RE);
-	var start = Math.max(line - 3, 0);
-	var end = Math.min(lines.length, line + 3);
+	let lines = template.split(LINE_RE);
+	let start = Math.max(line - 3, 0);
+	let end = Math.min(lines.length, line + 3);
 	err.line = line;
-	err.message += '\n\n' + lines.slice(start, end).map(function (codes, i) {
-		var curLine = start + i + 1;
+	err.message += '\n\n' + lines.slice(start, end).map((codes, i) => {
+		let curLine = start + i + 1;
 		return (curLine === line ? ' >> ' : '    ') + curLine + '| ' + codes;
 	}).join('\n') + '\n';
 	throw err;
 }
 
 var gotpl = {
-	config: config,
-	compile: compile,
-	render: render,
-	renderFile: renderFile,
-	renderFileSync: renderFileSync,
-	escapeHTML: escapeHTML,
-	version: version
+	config,
+	compile,
+	render,
+	renderFile,
+	renderFileSync,
+	escapeHTML,
+	version
 };
 
-module.exports = gotpl;
+export default gotpl;

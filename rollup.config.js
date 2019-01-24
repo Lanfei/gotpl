@@ -7,7 +7,7 @@ import pkg from './package.json';
 module.exports = [{
 	input: 'src/gotpl.js',
 	output: {
-		file: 'dist/gotpl.common.js',
+		file: pkg.main,
 		format: 'cjs'
 	},
 	external: Object.keys(pkg.dependencies),
@@ -18,8 +18,18 @@ module.exports = [{
 }, {
 	input: 'src/gotpl.js',
 	output: {
+		file: pkg.module,
+		format: 'esm'
+	},
+	external: Object.keys(pkg.dependencies),
+	plugins: [
+		replace({delimiters: ['<%=', '%>'], VERSION: pkg.version})
+	]
+}, {
+	input: 'src/gotpl.js',
+	output: {
 		name: 'gotpl',
-		file: 'dist/gotpl.js',
+		file: pkg.browser,
 		format: 'umd'
 	},
 	plugins: [

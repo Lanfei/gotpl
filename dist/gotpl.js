@@ -194,7 +194,7 @@
 	 * @license MIT
 	 */
 
-	var version = '8.3.0';
+	var version = '8.4.0';
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;

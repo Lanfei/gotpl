@@ -1,8 +1,11 @@
 {
   "name": "gotpl",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "homepage": "https://github.com/Lanfei/gotpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
+  "main": "dist/gotpl.common.js",
+  "module": "dist/gotpl.esm.js",
+  "browser": "dist/gotpl.js",
   "files": [
     "src",
     "dist/*.js"
@@ -29,7 +32,6 @@
     "template",
     "tpl"
   ],
-  "main": "dist/gotpl.common.js",
   "dependencies": {
     "escape-html": "^1.0.3",
     "is-keyword-js": "^1.0.3",
