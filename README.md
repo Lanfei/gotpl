@@ -7,7 +7,7 @@ A lightweight, high-performance JavaScript template engine.
 ### Webpack/Browserify
 
 ```bash
-$ npm install gotpl --save
+npm install gotpl --save
 ```
 
 ### Direct `<script>` Include

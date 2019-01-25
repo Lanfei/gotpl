@@ -1,6 +1,6 @@
 {
   "name": "gotpl",
-  "version": "8.4.2",
+  "version": "8.4.3",
   "homepage": "https://github.com/Lanfei/gotpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
   "main": "dist/gotpl.common.js",
