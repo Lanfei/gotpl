@@ -9,7 +9,7 @@ import escapeHTML from 'escape-html';
  * @license MIT
  */
 
-const version = '8.4.0';
+const version = '8.4.1';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
@@ -225,7 +225,7 @@ function compile(template, options) {
 		if (html) {
 			let htmlCode;
 			if (minify) {
-				htmlCode = html.replace(INDENT_RE, '');
+				htmlCode = html.replace(INDENT_RE, '$1');
 			} else {
 				htmlCode = html;
 			}

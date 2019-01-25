@@ -14,7 +14,7 @@ var escapeHTML = _interopDefault(require('escape-html'));
  * @license MIT
  */
 
-var version = '8.4.0';
+var version = '8.4.1';
 
 // Patterns
 var LINE_RE = /\r?\n/g;
@@ -234,7 +234,7 @@ function compile(template, options) {
 		if (html) {
 			var htmlCode;
 			if (minify) {
-				htmlCode = html.replace(INDENT_RE, '');
+				htmlCode = html.replace(INDENT_RE, '$1');
 			} else {
 				htmlCode = html;
 			}

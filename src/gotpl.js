@@ -226,7 +226,7 @@ function compile(template, options) {
 		if (html) {
 			let htmlCode;
 			if (minify) {
-				htmlCode = html.replace(INDENT_RE, '');
+				htmlCode = html.replace(INDENT_RE, '$1');
 			} else {
 				htmlCode = html;
 			}
