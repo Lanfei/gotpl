@@ -198,7 +198,7 @@
 
 	// Patterns
 	var LINE_RE = /\r?\n/g;
-	var INDENT_RE = /(^|\r|\n)+\s+/g;
+	var INDENT_RE = /([\r\n])+\s+/g;
 
 	/**
 	 * Default Options

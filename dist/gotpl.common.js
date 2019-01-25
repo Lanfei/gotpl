@@ -18,7 +18,7 @@ var version = '8.4.1';
 
 // Patterns
 var LINE_RE = /\r?\n/g;
-var INDENT_RE = /(^|\r|\n)+\s+/g;
+var INDENT_RE = /([\r\n])+\s+/g;
 
 // Rendering caches
 var cache = {};

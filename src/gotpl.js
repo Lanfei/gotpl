@@ -14,7 +14,7 @@ const isBrowser = '<%=BUILD_ENV%>' === 'browser';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
-const INDENT_RE = /(^|\r|\n)+\s+/g;
+const INDENT_RE = /([\r\n])+\s+/g;
 
 // Rendering caches
 const cache = {};

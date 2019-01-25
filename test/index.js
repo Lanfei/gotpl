@@ -55,13 +55,13 @@ describe('gotpl.render(str, data, options)', function () {
 	});
 
 	it('should minify indents', function () {
-		let result = gotpl.render('\t<p>Hello</p>\n\t<p>gotpl</p>');
-		expect(result).to.equal('<p>Hello</p>\n<p>gotpl</p>');
+		let result = gotpl.render('<p>\n\t<b>gotpl</b></p>');
+		expect(result).to.equal('<p>\n<b>gotpl</b></p>');
 	});
 
 	it('should render according to options', function () {
-		let result = gotpl.render('<p>Hello</p>\n<p>gotpl</p>', null, {minify: false});
-		expect(result).to.equal('<p>Hello</p>\n<p>gotpl</p>');
+		let result = gotpl.render('<p>\n\t<b>gotpl</b></p>', null, {minify: false});
+		expect(result).to.equal('<p>\n\t<b>gotpl</b></p>');
 	});
 });
 
