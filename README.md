@@ -1,4 +1,11 @@
-# gotpl · [![Build Status][build-image]][build-url] [![Coverage Status][coverage-image]][coverage-url] [![Version][version-image]][version-url] [![License][license-image]][license-url]
+# gotpl
+
+[![Build Status][build-image]][build-url]
+[![Coverage Status][coverage-image]][coverage-url]
+[![Version][version-image]][version-url]
+[![License][license-image]][license-url]
+[![Dependencies][dep-image]][dep-url]
+[![DevDependencies][dev-dep-image]][dev-dep-url]
 
 A lightweight, high-performance JavaScript template engine.
 
@@ -141,3 +148,7 @@ Use `include(path[, data, options])` function to import partial templates, and u
 [version-image]: https://img.shields.io/npm/v/gotpl.svg
 [license-url]: https://github.com/Lanfei/gotpl/blob/master/LICENSE
 [license-image]: https://img.shields.io/npm/l/gotpl.svg
+[dep-url]: https://david-dm.org/Lanfei/gotpl
+[dep-image]: https://david-dm.org/Lanfei/gotpl/status.svg
+[dev-dep-url]: https://david-dm.org/Lanfei/gotpl?type=dev
+[dev-dep-image]: https://david-dm.org/Lanfei/gotpl/dev-status.svg

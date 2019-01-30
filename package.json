@@ -1,6 +1,6 @@
 {
   "name": "gotpl",
-  "version": "8.4.3",
+  "version": "8.4.4",
   "homepage": "https://github.com/Lanfei/gotpl",
   "description": "A lightweight, high-performance JavaScript template engine.",
   "main": "dist/gotpl.common.js",
@@ -14,7 +14,8 @@
     "test": "mocha",
     "codecov": "istanbul cover _mocha && codecov",
     "build": "rimraf dist && rollup -c && npm run uglify",
-    "uglify": "uglifyjs dist/gotpl.js -o dist/gotpl.min.js -c --source-map"
+    "uglify": "uglifyjs dist/gotpl.js -o dist/gotpl.min.js -c --source-map",
+    "prepublish": "npm run test"
   },
   "author": {
     "name": "Lanfei",
@@ -29,8 +30,9 @@
     "node": ">=0.10.0"
   },
   "keywords": [
+    "tpl",
     "template",
-    "tpl"
+    "template-engine"
   ],
   "dependencies": {
     "escape-html": "^1.0.3",
@@ -38,8 +40,8 @@
     "js-tokens": "^4.0.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "codecov": "^3.1.0",
-    "expect.js": "^0.3.1",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.3",
