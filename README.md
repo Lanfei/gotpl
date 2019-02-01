@@ -142,8 +142,8 @@ Use `include(path[, data, options])` function to import partial templates, and u
 
 [build-url]: https://circleci.com/gh/Lanfei/gotpl
 [build-image]: https://img.shields.io/circleci/project/github/Lanfei/gotpl.svg
-[coverage-url]: https://codecov.io/github/Lanfei/gotpl
-[coverage-image]: https://img.shields.io/codecov/c/github/Lanfei/gotpl.svg
+[coverage-url]: https://coveralls.io/github/Lanfei/gotpl
+[coverage-image]: https://coveralls.io/repos/github/Lanfei/gotpl/badge.svg
 [version-url]: https://npmjs.org/package/gotpl
 [version-image]: https://img.shields.io/npm/v/gotpl.svg
 [license-url]: https://github.com/Lanfei/gotpl/blob/master/LICENSE

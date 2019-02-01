@@ -9,7 +9,7 @@ import escapeHTML from 'escape-html';
  * @license MIT
  */
 
-const version = '8.4.4';
+const version = '8.4.5';
 
 // Patterns
 const LINE_RE = /\r?\n/g;
